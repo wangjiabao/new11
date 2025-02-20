@@ -11,17 +11,18 @@ import (
 )
 
 type EthUserRecord struct {
-	ID        int64
-	UserId    int64
-	Hash      string
-	Status    string
-	Type      string
-	Amount    string
-	AmountTwo uint64
-	RelAmount int64
-	CoinType  string
-	Last      int64
-	CreatedAt time.Time
+	ID         int64
+	UserId     int64
+	Hash       string
+	Status     string
+	Type       string
+	Amount     string
+	AmountUsdt float64
+	AmountTwo  uint64
+	RelAmount  int64
+	CoinType   string
+	Last       int64
+	CreatedAt  time.Time
 }
 
 type Location struct {
@@ -252,14 +253,15 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount u
 
 		// 充值记录
 		_, err = ruc.ethUserRecordRepo.CreateEthUserRecordListByHash(ctx, &EthUserRecord{
-			Hash:      eth.Hash,
-			UserId:    eth.UserId,
-			Status:    eth.Status,
-			Type:      eth.Type,
-			Amount:    eth.Amount,
-			AmountTwo: amount,
-			CoinType:  eth.CoinType,
-			Last:      eth.Last,
+			Hash:       eth.Hash,
+			UserId:     eth.UserId,
+			Status:     eth.Status,
+			Type:       eth.Type,
+			Amount:     eth.Amount,
+			AmountTwo:  amount,
+			AmountUsdt: eth.AmountUsdt,
+			CoinType:   eth.CoinType,
+			Last:       eth.Last,
 		})
 		if nil != err {
 			return err

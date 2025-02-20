@@ -400,8 +400,8 @@ func (uuc *UserUseCase) GetUserByAddress(ctx context.Context, Addresses ...strin
 	return uuc.repo.GetUserByAddresses(ctx, Addresses...)
 }
 
-func (uuc *UserUseCase) GetDhbConfig(ctx context.Context) ([]*Config, error) {
-	return uuc.configRepo.GetConfigByKeys(ctx, "level1Dhb", "level2Dhb", "level3Dhb")
+func (uuc *UserUseCase) GetbPriceConfig(ctx context.Context) ([]*Config, error) {
+	return uuc.configRepo.GetConfigByKeys(ctx, "b_price", "b_price_base")
 }
 
 func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *User, req *v1.EthAuthorizeRequest) (*User, error) {
@@ -2877,6 +2877,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	usersMap = make(map[int64]*User, 0)
 	for _, vUsers := range users {
+		if vUsers.Amount {
+
+		}
 		usersMap[vUsers.ID] = vUsers
 	}
 

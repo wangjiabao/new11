@@ -66,6 +66,41 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 	//	}
 	//}
 
+	var (
+		configs []*biz.Config
+		bPrice             int64
+		bPriceBase         int64
+	)
+	configs, _ = a.uuc.GetbPriceConfig(ctx)
+		"location_reward_rate", "b_price", "b_price_base", "exchange_rate",
+		"recommend_one_rate", "recommend_two_rate",
+		"recommend_three_rate", "recommend_four_rate",
+		"recommend_five_rate", "recommend_six_rate",
+		"recommend_seven_rate", "recommend_eight_rate",
+		"area_one", "area_two", "area_three", "area_four", "area_five",
+		"area_num_one", "area_num_two", "area_num_three", "area_num_four", "area_num_five", "one", "two", "three", "four", "total",
+	)
+	if nil != configs {
+		for _, vConfig := range configs {
+			if "b_price" == vConfig.KeyName {
+				bPrice, _ = strconv.ParseInt(vConfig.Value, 10, 64)
+			} else if "b_price_base" == vConfig.KeyName {
+				bPriceBase, _ = strconv.ParseInt(vConfig.Value, 10, 64)
+			}
+		}
+	}
+
+	if 0 == bPrice {
+		fmt.Println("入金错误：价格为0")
+		return nil, nil
+	}
+	if 0 == bPriceBase {
+		fmt.Println("入金错误：价格为0")
+		return nil, nil
+	}
+
+	price := float64(bPrice) / float64(bPriceBase)
+
 	for i := 1; i <= 10; i++ {
 		var (
 			depositUsdtResult []*userDeposit
@@ -151,8 +186,9 @@ func (a *AppService) Deposit(ctx context.Context, req *v1.DepositRequest) (*v1.D
 					Status:    "success",
 					Type:      "deposit",
 					RelAmount: tmpValue,
+					AmountUsdt: price*float64(tmpValue),
 					Amount:    strconv.FormatInt(tmpValue, 10) + "00000000000000000000",
-					CoinType:  "RAW",
+					CoinType:  "USDT",
 					Last:      userLength,
 				})
 				if nil != err {

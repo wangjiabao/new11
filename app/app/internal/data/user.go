@@ -524,6 +524,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			Lock:         item.Lock,
 			AddressTwo:   item.AddressTwo,
 			AddressThree: item.AddressThree,
+			Amount:       item.Amount,
 		})
 	}
 	return res, nil
@@ -2435,7 +2436,7 @@ func (ub *UserBalanceRepo) RecommendRewardBiw(ctx context.Context, userId int64,
 
 // UpdateUserNewTwoNewTwo .
 func (ui *UserInfoRepo) UpdateUserNewTwoNewTwo(ctx context.Context, userId int64, amount uint64, coinType string) error {
-	if "RAW" == coinType {
+	if "USDT" == coinType {
 		res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
 			Updates(map[string]interface{}{"amount": gorm.Expr("amount + ?", amount)})
 		if res.Error != nil {

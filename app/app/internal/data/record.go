@@ -10,17 +10,18 @@ import (
 )
 
 type EthUserRecord struct {
-	ID        int64     `gorm:"primarykey;type:int"`
-	Hash      string    `gorm:"type:varchar(100);not null"`
-	UserId    int64     `gorm:"type:int;not null"`
-	Status    string    `gorm:"type:varchar(45);not null"`
-	Type      string    `gorm:"type:varchar(45);not null"`
-	Amount    string    `gorm:"type:varchar(45);not null"`
-	AmountTwo uint64    `gorm:"type:bigint;not null"`
-	CoinType  string    `gorm:"type:varchar(45);not null"`
-	CreatedAt time.Time `gorm:"type:datetime;not null"`
-	UpdatedAt time.Time `gorm:"type:datetime;not null"`
-	Last      int64     `gorm:"type:int;not null"`
+	ID         int64     `gorm:"primarykey;type:int"`
+	Hash       string    `gorm:"type:varchar(100);not null"`
+	UserId     int64     `gorm:"type:int;not null"`
+	Status     string    `gorm:"type:varchar(45);not null"`
+	Type       string    `gorm:"type:varchar(45);not null"`
+	Amount     string    `gorm:"type:varchar(45);not null"`
+	AmountTwo  uint64    `gorm:"type:bigint;not null"`
+	AmountUsdt float64   `gorm:"type:decimal(65,20);not null"`
+	CoinType   string    `gorm:"type:varchar(45);not null"`
+	CreatedAt  time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt  time.Time `gorm:"type:datetime;not null"`
+	Last       int64     `gorm:"type:int;not null"`
 }
 
 type EthUserRecordRepo struct {
@@ -123,6 +124,7 @@ func (e *EthUserRecordRepo) CreateEthUserRecordListByHash(ctx context.Context, r
 	ethUserRecord.AmountTwo = r.AmountTwo
 	ethUserRecord.CoinType = r.CoinType
 	ethUserRecord.Last = r.Last
+	ethUserRecord.AmountUsdt = r.AmountUsdt
 
 	res := e.data.DB(ctx).Table("eth_user_record").Create(&ethUserRecord)
 	if res.Error != nil {
@@ -130,14 +132,15 @@ func (e *EthUserRecordRepo) CreateEthUserRecordListByHash(ctx context.Context, r
 	}
 
 	return &biz.EthUserRecord{
-		ID:       ethUserRecord.ID,
-		UserId:   ethUserRecord.UserId,
-		Hash:     ethUserRecord.Hash,
-		Status:   ethUserRecord.Status,
-		Type:     ethUserRecord.Type,
-		Amount:   ethUserRecord.Amount,
-		CoinType: ethUserRecord.CoinType,
-		Last:     ethUserRecord.Last,
+		ID:         ethUserRecord.ID,
+		UserId:     ethUserRecord.UserId,
+		Hash:       ethUserRecord.Hash,
+		Status:     ethUserRecord.Status,
+		Type:       ethUserRecord.Type,
+		Amount:     ethUserRecord.Amount,
+		CoinType:   ethUserRecord.CoinType,
+		Last:       ethUserRecord.Last,
+		AmountUsdt: ethUserRecord.AmountUsdt,
 	}, nil
 }
 
