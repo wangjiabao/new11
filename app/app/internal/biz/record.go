@@ -224,8 +224,7 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount u
 	//	strUpdate = "total_b"
 	//	amount = 3000
 	//	kkdt = 1500
-	//	uudt = 3000
-	//} else if 1000 <= amount {
+	//	uudt = "b_price" else if 1000 <= amount {
 	//	strUpdate = "total_a"
 	//	amount = 1000
 	//	kkdt = 500
@@ -234,8 +233,25 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount u
 	//	return nil
 	//}
 
+	// 推荐人
+	var (
+		userRecommend         *UserRecommend
+		myUserRecommendUserId int64
+		tmpRecommendUserIds   []string
+	)
+	userRecommend, err = ruc.userRecommendRepo.GetUserRecommendByUserId(ctx, userId)
+	if nil != err {
+		return err
+	}
+	if "" != userRecommend.RecommendCode {
+		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+		if 2 <= len(tmpRecommendUserIds) {
+			myUserRecommendUserId, _ = strconv.ParseInt(tmpRecommendUserIds[len(tmpRecommendUserIds)-1], 10, 64) // 最后一位是直推人
+		}
+	}
+
 	if err = ruc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-		err = ruc.userInfoRepo.UpdateUserNewTwoNewTwo(ctx, userId, amount, eth.CoinType)
+		err = ruc.userInfoRepo.UpdateUserNewTwoNewTwo(ctx, userId, amount, eth.AmountUsdt, myUserRecommendUserId, eth.CoinType)
 		if nil != err {
 			return err
 		}
