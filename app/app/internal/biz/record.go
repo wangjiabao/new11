@@ -11,18 +11,17 @@ import (
 )
 
 type EthUserRecord struct {
-	ID         int64
-	UserId     int64
-	Hash       string
-	Status     string
-	Type       string
-	Amount     string
-	AmountUsdt float64
-	AmountTwo  uint64
-	RelAmount  int64
-	CoinType   string
-	Last       int64
-	CreatedAt  time.Time
+	ID        int64
+	UserId    int64
+	Hash      string
+	Status    string
+	Type      string
+	Amount    string
+	AmountTwo uint64
+	RelAmount int64
+	CoinType  string
+	Last      int64
+	CreatedAt time.Time
 }
 
 type Location struct {
@@ -234,24 +233,24 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount u
 	//}
 
 	// 推荐人
-	var (
-		userRecommend         *UserRecommend
-		myUserRecommendUserId int64
-		tmpRecommendUserIds   []string
-	)
-	userRecommend, err = ruc.userRecommendRepo.GetUserRecommendByUserId(ctx, userId)
-	if nil != err {
-		return err
-	}
-	if "" != userRecommend.RecommendCode {
-		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
-		if 2 <= len(tmpRecommendUserIds) {
-			myUserRecommendUserId, _ = strconv.ParseInt(tmpRecommendUserIds[len(tmpRecommendUserIds)-1], 10, 64) // 最后一位是直推人
-		}
-	}
+	//var (
+	//	userRecommend         *UserRecommend
+	//	myUserRecommendUserId int64
+	//	tmpRecommendUserIds   []string
+	//)
+	//userRecommend, err = ruc.userRecommendRepo.GetUserRecommendByUserId(ctx, userId)
+	//if nil != err {
+	//	return err
+	//}
+	//if "" != userRecommend.RecommendCode {
+	//	tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+	//	if 2 <= len(tmpRecommendUserIds) {
+	//		myUserRecommendUserId, _ = strconv.ParseInt(tmpRecommendUserIds[len(tmpRecommendUserIds)-1], 10, 64) // 最后一位是直推人
+	//	}
+	//}
 
 	if err = ruc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-		err = ruc.userInfoRepo.UpdateUserNewTwoNewTwo(ctx, userId, amount, eth.AmountUsdt, myUserRecommendUserId, eth.CoinType)
+		err = ruc.userInfoRepo.UpdateUserNewTwoNewTwo(ctx, userId, float64(amount))
 		if nil != err {
 			return err
 		}
@@ -269,15 +268,14 @@ func (ruc *RecordUseCase) DepositNew(ctx context.Context, userId int64, amount u
 
 		// 充值记录
 		_, err = ruc.ethUserRecordRepo.CreateEthUserRecordListByHash(ctx, &EthUserRecord{
-			Hash:       eth.Hash,
-			UserId:     eth.UserId,
-			Status:     eth.Status,
-			Type:       eth.Type,
-			Amount:     eth.Amount,
-			AmountTwo:  amount,
-			AmountUsdt: eth.AmountUsdt,
-			CoinType:   eth.CoinType,
-			Last:       eth.Last,
+			Hash:      eth.Hash,
+			UserId:    eth.UserId,
+			Status:    eth.Status,
+			Type:      eth.Type,
+			Amount:    eth.Amount,
+			AmountTwo: amount,
+			CoinType:  eth.CoinType,
+			Last:      eth.Last,
 		})
 		if nil != err {
 			return err

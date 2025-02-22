@@ -124,7 +124,6 @@ func (e *EthUserRecordRepo) CreateEthUserRecordListByHash(ctx context.Context, r
 	ethUserRecord.AmountTwo = r.AmountTwo
 	ethUserRecord.CoinType = r.CoinType
 	ethUserRecord.Last = r.Last
-	ethUserRecord.AmountUsdt = r.AmountUsdt
 
 	res := e.data.DB(ctx).Table("eth_user_record").Create(&ethUserRecord)
 	if res.Error != nil {
@@ -132,15 +131,14 @@ func (e *EthUserRecordRepo) CreateEthUserRecordListByHash(ctx context.Context, r
 	}
 
 	return &biz.EthUserRecord{
-		ID:         ethUserRecord.ID,
-		UserId:     ethUserRecord.UserId,
-		Hash:       ethUserRecord.Hash,
-		Status:     ethUserRecord.Status,
-		Type:       ethUserRecord.Type,
-		Amount:     ethUserRecord.Amount,
-		CoinType:   ethUserRecord.CoinType,
-		Last:       ethUserRecord.Last,
-		AmountUsdt: ethUserRecord.AmountUsdt,
+		ID:       ethUserRecord.ID,
+		UserId:   ethUserRecord.UserId,
+		Hash:     ethUserRecord.Hash,
+		Status:   ethUserRecord.Status,
+		Type:     ethUserRecord.Type,
+		Amount:   ethUserRecord.Amount,
+		CoinType: ethUserRecord.CoinType,
+		Last:     ethUserRecord.Last,
 	}, nil
 }
 
