@@ -158,7 +158,7 @@ func (lr *LocationRepo) CreateLocationNew(ctx context.Context, rel *biz.Location
 	userBalanceRecode.Balance = 0
 	userBalanceRecode.UserId = rel.UserId
 	userBalanceRecode.Type = "deposit"
-	userBalanceRecode.CoinType = "usdt"
+	userBalanceRecode.CoinType = "USDT"
 	userBalanceRecode.Amount = amount
 	res = lr.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode)
 	if res.Error != nil {

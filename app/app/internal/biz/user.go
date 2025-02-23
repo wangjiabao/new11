@@ -130,6 +130,8 @@ type Withdraw struct {
 	UserId          int64
 	Amount          int64
 	RelAmount       int64
+	AmountNew       float64
+	RelAmountNew    float64
 	BalanceRecordId int64
 	Status          string
 	Type            string
@@ -2818,24 +2820,24 @@ func lessThanOrEqualZero(a, b float64, epsilon float64) bool {
 
 func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.AdminDailyLocationRewardRequest) (*v1.AdminDailyLocationRewardReply, error) {
 	var (
-		level1  float64
-		level2  float64
-		level3  float64
-		level4  float64
-		v1      float64
-		v2      float64
-		v3      float64
-		v4      float64
-		v5      float64
-		v6      float64
-		v7      float64
-		v8      float64
-		v0      float64
-		va4     float64
-		va5     float64
-		va6     float64
-		va7     float64
-		va8     float64
+		level1 float64
+		level2 float64
+		level3 float64
+		level4 float64
+		v1     float64
+		v2     float64
+		v3     float64
+		v4     float64
+		v5     float64
+		v6     float64
+		v7     float64
+		v8     float64
+		v0     float64
+		//va4     float64
+		//va5     float64
+		//va6     float64
+		//va7     float64
+		//va8     float64
 		configs []*Config
 		err     error
 	)
@@ -2869,17 +2871,18 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				v8, _ = strconv.ParseFloat(vConfig.Value, 10)
 			} else if "v0" == vConfig.KeyName {
 				v0, _ = strconv.ParseFloat(vConfig.Value, 10)
-			} else if "va4" == vConfig.KeyName {
-				va4, _ = strconv.ParseFloat(vConfig.Value, 10)
-			} else if "va5" == vConfig.KeyName {
-				va5, _ = strconv.ParseFloat(vConfig.Value, 10)
-			} else if "va6" == vConfig.KeyName {
-				va6, _ = strconv.ParseFloat(vConfig.Value, 10)
-			} else if "va7" == vConfig.KeyName {
-				va7, _ = strconv.ParseFloat(vConfig.Value, 10)
-			} else if "va8" == vConfig.KeyName {
-				va8, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
+			//else if "va4" == vConfig.KeyName {
+			//	va4, _ = strconv.ParseFloat(vConfig.Value, 10)
+			//} elseif "va5" == vConfig.KeyName {
+			//	va5, _ = strconv.ParseFloat(vConfig.Value, 10)
+			//} else if "va6" == vConfig.KeyName {
+			//	va6, _ = strconv.ParseFloat(vConfig.Value, 10)
+			//} else if "va7" == vConfig.KeyName {
+			//	va7, _ = strconv.ParseFloat(vConfig.Value, 10)
+			//} else if "va8" == vConfig.KeyName {
+			//	va8, _ = strconv.ParseFloat(vConfig.Value, 10)
+			//}
 		}
 	}
 
@@ -4690,218 +4693,218 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	// 社区奖励
-	var (
-		buys []*Reward
-	)
-	buys, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx, -1)
-	if nil != err {
-		return nil, nil
-	}
-
-	for _, vBuys := range buys {
-		userId := vBuys.UserId
-
-		// 推荐人
-		var (
-			userRecommend *UserRecommend
-		)
-		if _, ok := userRecommendsMap[userId]; ok {
-			userRecommend = userRecommendsMap[userId]
-		} else {
-			fmt.Println("错误分红社区，信息缺失：", err, vBuys)
-		}
-
-		if nil == userRecommend || "" == userRecommend.RecommendCode {
-			continue
-		}
-
-		var (
-			tmpRecommendUserIds []string
-		)
-		tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
-
-		lastLevel := 0
-		lastLevelNum := float64(0)
-		for i := len(tmpRecommendUserIds) - 1; i >= 0; i-- {
-			currentLevel := 0
-
-			tmpUserId, _ := strconv.ParseInt(tmpRecommendUserIds[i], 10, 64) // 最后一位是直推人
-			if 0 >= tmpUserId {
-				continue
-			}
-
-			// 本次执行已经出局
-			if _, ok := stopUserIds[tmpUserId]; ok {
-				continue
-			}
-
-			if _, ok := usersMap[tmpUserId]; !ok {
-				fmt.Println("错误分红社区，信息缺失,user：", err, vBuys, tmpUserId)
-				continue
-			}
-
-			tmpRecommendUser := usersMap[tmpUserId]
-			if nil == tmpRecommendUser {
-				fmt.Println("错误分红社区，信息缺失,user1：", err, vBuys)
-				continue
-			}
-
-			// 我的下级
-			if _, ok := myLowUser[tmpUserId]; !ok {
-				fmt.Println("错误分红社区，信息缺失3：", err, tmpUserId, vBuys)
-				continue
-			}
-
-			if 0 >= len(myLowUser[tmpUserId]) {
-				fmt.Println("错误分红社区，信息缺失3：", err, tmpUserId, vBuys)
-				continue
-			}
-
-			if 1 >= len(myLowUser[tmpUserId]) {
-				continue
-			}
-
-			// 获取业绩
-			tmpAreaMax := float64(0)
-			tmpMaxId := int64(0)
-			for _, vMyLowUser := range myLowUser[tmpUserId] {
-				if _, ok := usersMap[vMyLowUser.UserId]; !ok {
-					fmt.Println("错误分红社区，信息缺失4：", err, tmpUserId, vBuys)
-					continue
-				}
-
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
-					tmpMaxId = vMyLowUser.UserId
-				}
-			}
-
-			if 0 >= tmpMaxId {
-				continue
-			}
-
-			tmpAreaMin := float64(0)
-			for _, vMyLowUser := range myLowUser[tmpUserId] {
-				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
-				}
-			}
-
-			tmpLastLevelNum := float64(0)
-			if 100000 <= tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = va4
-			} else if 300000 <= tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = va5
-			} else if 1000000 <= tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = va6
-			} else if 3000000 <= tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = va7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = va8
-			} else {
-				// 跳过，没级别
-				continue
-			}
-
-			// 级别低跳过
-			if currentLevel <= lastLevel {
-				if 8 == lastLevel {
-					break
-				}
-
-				continue
-			} else {
-				// 级差
-				if tmpLastLevelNum < lastLevelNum {
-					fmt.Println("错误分红社区，配置，信息缺错误：", err, tmpUserId, vBuys, tmpLastLevelNum, lastLevelNum)
-					continue
-				}
-
-				tmp := vBuys.AmountNew * (tmpLastLevelNum - lastLevelNum)
-
-				var (
-					stopArea2 bool
-					num       float64
-				)
-				if 1 == tmpRecommendUser.Last {
-					num = 2
-				} else if 2 == tmpRecommendUser.Last {
-					num = 2.3
-				} else if 3 == tmpRecommendUser.Last {
-					num = 2.6
-				} else if 4 == tmpRecommendUser.Last {
-					num = 3
-				} else {
-					continue
-				}
-
-				if !lessThanOrEqualZero(tmp+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
-					tmp = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
-					stopArea2 = true
-				}
-
-				if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
-					var (
-						code int64
-					)
-
-					code, err = uuc.uiRepo.UpdateUserRewardAreaTwo(ctx, tmpRecommendUser.ID, tmp, stopArea2)
-					if code > 0 && err != nil {
-						fmt.Println("错误分红社区：", err, tmpRecommendUser)
-					}
-
-					if stopArea2 {
-						stopUserIds[tmpRecommendUser.ID] = true // 出局
-
-						// 推荐人
-						var (
-							userRecommendArea *UserRecommend
-						)
-						if _, ok := userRecommendsMap[tmpRecommendUser.ID]; ok {
-							userRecommendArea = userRecommendsMap[tmpRecommendUser.ID]
-						} else {
-							fmt.Println("错误分红社区，信息缺失7：", err, vBuys)
-						}
-
-						if nil != userRecommendArea && "" != userRecommendArea.RecommendCode {
-							var tmpRecommendAreaUserIds []string
-							tmpRecommendAreaUserIds = strings.Split(userRecommendArea.RecommendCode, "D")
-
-							for _, vTmpRecommendAreaUserIds := range tmpRecommendAreaUserIds {
-								if 0 >= len(vTmpRecommendAreaUserIds) {
-									continue
-								}
-
-								myUserRecommendAreaUserId, _ := strconv.ParseInt(vTmpRecommendAreaUserIds, 10, 64) // 最后一位是直推人
-								if 0 >= myUserRecommendAreaUserId {
-									continue
-								}
-
-								// 减掉业绩
-								err = uuc.uiRepo.UpdateUserMyTotalAmount(ctx, myUserRecommendAreaUserId, tmpRecommendUser.AmountUsdt)
-								if err != nil {
-									fmt.Println("错误分红社区：", err, vBuys)
-								}
-							}
-						}
-					}
-
-					return nil
-				}); nil != err {
-					fmt.Println("err reward daily area 2", err, vBuys)
-				}
-
-				lastLevel = currentLevel
-				lastLevelNum = tmpLastLevelNum
-			}
-		}
-
-	}
+	//var (
+	//	buys []*Reward
+	//)
+	//buys, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx, -1)
+	//if nil != err {
+	//	return nil, nil
+	//}
+	//
+	//for _, vBuys := range buys {
+	//	userId := vBuys.UserId
+	//
+	//	// 推荐人
+	//	var (
+	//		userRecommend *UserRecommend
+	//	)
+	//	if _, ok := userRecommendsMap[userId]; ok {
+	//		userRecommend = userRecommendsMap[userId]
+	//	} else {
+	//		fmt.Println("错误分红社区，信息缺失：", err, vBuys)
+	//	}
+	//
+	//	if nil == userRecommend || "" == userRecommend.RecommendCode {
+	//		continue
+	//	}
+	//
+	//	var (
+	//		tmpRecommendUserIds []string
+	//	)
+	//	tmpRecommendUserIds = strings.Split(userRecommend.RecommendCode, "D")
+	//
+	//	lastLevel := 0
+	//	lastLevelNum := float64(0)
+	//	for i := len(tmpRecommendUserIds) - 1; i >= 0; i-- {
+	//		currentLevel := 0
+	//
+	//		tmpUserId, _ := strconv.ParseInt(tmpRecommendUserIds[i], 10, 64) // 最后一位是直推人
+	//		if 0 >= tmpUserId {
+	//			continue
+	//		}
+	//
+	//		// 本次执行已经出局
+	//		if _, ok := stopUserIds[tmpUserId]; ok {
+	//			continue
+	//		}
+	//
+	//		if _, ok := usersMap[tmpUserId]; !ok {
+	//			fmt.Println("错误分红社区，信息缺失,user：", err, vBuys, tmpUserId)
+	//			continue
+	//		}
+	//
+	//		tmpRecommendUser := usersMap[tmpUserId]
+	//		if nil == tmpRecommendUser {
+	//			fmt.Println("错误分红社区，信息缺失,user1：", err, vBuys)
+	//			continue
+	//		}
+	//
+	//		// 我的下级
+	//		if _, ok := myLowUser[tmpUserId]; !ok {
+	//			fmt.Println("错误分红社区，信息缺失3：", err, tmpUserId, vBuys)
+	//			continue
+	//		}
+	//
+	//		if 0 >= len(myLowUser[tmpUserId]) {
+	//			fmt.Println("错误分红社区，信息缺失3：", err, tmpUserId, vBuys)
+	//			continue
+	//		}
+	//
+	//		if 1 >= len(myLowUser[tmpUserId]) {
+	//			continue
+	//		}
+	//
+	//		// 获取业绩
+	//		tmpAreaMax := float64(0)
+	//		tmpMaxId := int64(0)
+	//		for _, vMyLowUser := range myLowUser[tmpUserId] {
+	//			if _, ok := usersMap[vMyLowUser.UserId]; !ok {
+	//				fmt.Println("错误分红社区，信息缺失4：", err, tmpUserId, vBuys)
+	//				continue
+	//			}
+	//
+	//			if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
+	//				tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+	//				tmpMaxId = vMyLowUser.UserId
+	//			}
+	//		}
+	//
+	//		if 0 >= tmpMaxId {
+	//			continue
+	//		}
+	//
+	//		tmpAreaMin := float64(0)
+	//		for _, vMyLowUser := range myLowUser[tmpUserId] {
+	//			if tmpMaxId != vMyLowUser.UserId {
+	//				tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+	//			}
+	//		}
+	//
+	//		tmpLastLevelNum := float64(0)
+	//		if 100000 <= tmpAreaMin {
+	//			currentLevel = 4
+	//			tmpLastLevelNum = va4
+	//		} else if 300000 <= tmpAreaMin {
+	//			currentLevel = 5
+	//			tmpLastLevelNum = va5
+	//		} else if 1000000 <= tmpAreaMin {
+	//			currentLevel = 6
+	//			tmpLastLevelNum = va6
+	//		} else if 3000000 <= tmpAreaMin {
+	//			currentLevel = 7
+	//			tmpLastLevelNum = va7
+	//		} else if 10000000 <= tmpAreaMin {
+	//			currentLevel = 8
+	//			tmpLastLevelNum = va8
+	//		} else {
+	//			// 跳过，没级别
+	//			continue
+	//		}
+	//
+	//		// 级别低跳过
+	//		if currentLevel <= lastLevel {
+	//			if 8 == lastLevel {
+	//				break
+	//			}
+	//
+	//			continue
+	//		} else {
+	//			// 级差
+	//			if tmpLastLevelNum < lastLevelNum {
+	//				fmt.Println("错误分红社区，配置，信息缺错误：", err, tmpUserId, vBuys, tmpLastLevelNum, lastLevelNum)
+	//				continue
+	//			}
+	//
+	//			tmp := vBuys.AmountNew * (tmpLastLevelNum - lastLevelNum)
+	//
+	//			var (
+	//				stopArea2 bool
+	//				num       float64
+	//			)
+	//			if 1 == tmpRecommendUser.Last {
+	//				num = 2
+	//			} else if 2 == tmpRecommendUser.Last {
+	//				num = 2.3
+	//			} else if 3 == tmpRecommendUser.Last {
+	//				num = 2.6
+	//			} else if 4 == tmpRecommendUser.Last {
+	//				num = 3
+	//			} else {
+	//				continue
+	//			}
+	//
+	//			if !lessThanOrEqualZero(tmp+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+	//				tmp = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
+	//				stopArea2 = true
+	//			}
+	//
+	//			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+	//				var (
+	//					code int64
+	//				)
+	//
+	//				code, err = uuc.uiRepo.UpdateUserRewardAreaTwo(ctx, tmpRecommendUser.ID, tmp, stopArea2)
+	//				if code > 0 && err != nil {
+	//					fmt.Println("错误分红社区：", err, tmpRecommendUser)
+	//				}
+	//
+	//				if stopArea2 {
+	//					stopUserIds[tmpRecommendUser.ID] = true // 出局
+	//
+	//					// 推荐人
+	//					var (
+	//						userRecommendArea *UserRecommend
+	//					)
+	//					if _, ok := userRecommendsMap[tmpRecommendUser.ID]; ok {
+	//						userRecommendArea = userRecommendsMap[tmpRecommendUser.ID]
+	//					} else {
+	//						fmt.Println("错误分红社区，信息缺失7：", err, vBuys)
+	//					}
+	//
+	//					if nil != userRecommendArea && "" != userRecommendArea.RecommendCode {
+	//						var tmpRecommendAreaUserIds []string
+	//						tmpRecommendAreaUserIds = strings.Split(userRecommendArea.RecommendCode, "D")
+	//
+	//						for _, vTmpRecommendAreaUserIds := range tmpRecommendAreaUserIds {
+	//							if 0 >= len(vTmpRecommendAreaUserIds) {
+	//								continue
+	//							}
+	//
+	//							myUserRecommendAreaUserId, _ := strconv.ParseInt(vTmpRecommendAreaUserIds, 10, 64) // 最后一位是直推人
+	//							if 0 >= myUserRecommendAreaUserId {
+	//								continue
+	//							}
+	//
+	//							// 减掉业绩
+	//							err = uuc.uiRepo.UpdateUserMyTotalAmount(ctx, myUserRecommendAreaUserId, tmpRecommendUser.AmountUsdt)
+	//							if err != nil {
+	//								fmt.Println("错误分红社区：", err, vBuys)
+	//							}
+	//						}
+	//					}
+	//				}
+	//
+	//				return nil
+	//			}); nil != err {
+	//				fmt.Println("err reward daily area 2", err, vBuys)
+	//			}
+	//
+	//			lastLevel = currentLevel
+	//			lastLevelNum = tmpLastLevelNum
+	//		}
+	//	}
+	//
+	//}
 
 	return nil, err
 }

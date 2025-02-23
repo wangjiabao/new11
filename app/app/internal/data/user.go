@@ -125,6 +125,8 @@ type Withdraw struct {
 	BalanceRecordId int64     `gorm:"type:int"`
 	CreatedAt       time.Time `gorm:"type:datetime;not null"`
 	UpdatedAt       time.Time `gorm:"type:datetime;not null"`
+	AmountNew       float64   `gorm:"type:decimal(65,20);not null"`
+	RelAmountNew    float64   `gorm:"type:decimal(65,20);not null"`
 }
 
 type Trade struct {
@@ -2100,6 +2102,8 @@ func (ub *UserBalanceRepo) GetWithdrawPassOrRewardedFirst(ctx context.Context) (
 		Type:            withdraw.Type,
 		CreatedAt:       withdraw.CreatedAt,
 		Address:         withdraw.Address,
+		AmountNew:       withdraw.AmountNew,
+		RelAmountNew:    withdraw.RelAmountNew,
 	}, nil
 }
 
@@ -3182,7 +3186,7 @@ func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context,
 	if err := ub.data.db.
 		Where("created_at>=?", todayStart).
 		Where("created_at<?", todayEnd).
-		Where("type=?", "raw").
+		Where("type=?", "RAW").
 		Where("reason=?", "buy").
 		Table("reward").Find(&rewards).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
