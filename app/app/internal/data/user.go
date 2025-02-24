@@ -2480,8 +2480,19 @@ func (ui *UserInfoRepo) UpdateUserMyTotalAmount(ctx context.Context, userId int6
 	return nil
 }
 
+// UpdateTotalOne .
+func (ui *UserInfoRepo) UpdateTotalOne(ctx context.Context, amountUsdt float64) error {
+	res := ui.data.DB(ctx).Table("total").Where("id=?", 1).
+		Updates(map[string]interface{}{"one": gorm.Expr("one + ?", amountUsdt)})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
+	}
+
+	return nil
+}
+
 // UpdateUserReward .
-func (ui *UserInfoRepo) UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error) {
+func (ui *UserInfoRepo) UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error) {
 	var err error
 
 	if stop {
@@ -2493,7 +2504,7 @@ func (ui *UserInfoRepo) UpdateUserReward(ctx context.Context, userId int64, amou
 
 		var rewardStop Reward
 		rewardStop.UserId = userId
-		rewardStop.AmountNew = amountUsdt
+		rewardStop.AmountNew = amountUsdtTotal
 		rewardStop.Type = "out"   // 本次分红的行为类型
 		rewardStop.Reason = "out" // 给我分红的理由
 		err = ui.data.DB(ctx).Table("reward").Create(&rewardStop).Error
@@ -2566,7 +2577,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommendUserGet(ctx context.Context, us
 }
 
 // UpdateUserRewardRecommend .
-func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error) {
+func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error) {
 	var err error
 
 	if stop {
@@ -2578,7 +2589,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId in
 
 		var rewardStop Reward
 		rewardStop.UserId = userId
-		rewardStop.AmountNew = amountUsdt
+		rewardStop.AmountNew = amountUsdtTotal
 		rewardStop.Type = "out"   // 本次分红的行为类型
 		rewardStop.Reason = "out" // 给我分红的理由
 		err = ui.data.DB(ctx).Table("reward").Create(&rewardStop).Error
@@ -2632,7 +2643,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId in
 }
 
 // UpdateUserRewardArea .
-func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error) {
+func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool) (int64, error) {
 	var err error
 
 	if stop {
@@ -2644,7 +2655,7 @@ func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, 
 
 		var rewardStop Reward
 		rewardStop.UserId = userId
-		rewardStop.AmountNew = amountUsdt
+		rewardStop.AmountNew = amountUsdtTotal
 		rewardStop.Type = "out"   // 本次分红的行为类型
 		rewardStop.Reason = "out" // 给我分红的理由
 		err = ui.data.DB(ctx).Table("reward").Create(&rewardStop).Error
@@ -2687,8 +2698,13 @@ func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, 
 	reward.UserId = userBalance.UserId
 	reward.AmountNew = amountUsdt
 	reward.BalanceRecordId = userBalanceRecode.ID
-	reward.Type = "system_reward_area_daily" // 本次分红的行为类型
-	reward.Reason = "area"
+	if tmpLevel {
+		reward.Type = "system_reward_area_daily_three" // 本次分红的行为类型
+		reward.Reason = "area_three"
+	} else {
+		reward.Type = "system_reward_area_daily" // 本次分红的行为类型
+		reward.Reason = "area"
+	}
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
 	if err != nil {
 		return 0, err
