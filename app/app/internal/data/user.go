@@ -2670,10 +2670,18 @@ func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, 
 		}
 	}
 
-	if err = ui.data.DB(ctx).Table("user_balance").
-		Where("user_id=?", userId).
-		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amountUsdt), "area_total_float": gorm.Expr("area_total_float + ?", amountUsdt)}).Error; nil != err {
-		return 0, errors.NotFound("user balance err", "user balance not found")
+	if tmpLevel {
+		if err = ui.data.DB(ctx).Table("user_balance").
+			Where("user_id=?", userId).
+			Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amountUsdt), "area_total_float_two": gorm.Expr("area_total_float_two + ?", amountUsdt)}).Error; nil != err {
+			return 0, errors.NotFound("user balance err", "user balance not found")
+		}
+	} else {
+		if err = ui.data.DB(ctx).Table("user_balance").
+			Where("user_id=?", userId).
+			Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amountUsdt), "area_total_float": gorm.Expr("area_total_float + ?", amountUsdt)}).Error; nil != err {
+			return 0, errors.NotFound("user balance err", "user balance not found")
+		}
 	}
 
 	var userBalance UserBalance
