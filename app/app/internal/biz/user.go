@@ -2810,15 +2810,6 @@ func (uuc *UserUseCase) AdminDailyBalanceReward(ctx context.Context, req *v1.Adm
 	return &v1.AdminDailyBalanceRewardReply{}, nil
 }
 
-// floatEqual 判断两个浮点数是否在精度范围内相等
-func floatEqual(a, b, epsilon float64) bool {
-	return math.Abs(a-b) <= epsilon
-}
-
-func lessThanOrEqualZero(a, b float64, epsilon float64) bool {
-	return a-b < epsilon || math.Abs(a-b) < epsilon
-}
-
 func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.AdminDailyLocationRewardRequest) (*v1.AdminDailyLocationRewardReply, error) {
 	var (
 		level1 float64
@@ -2917,7 +2908,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		usersMap[vUsers.ID] = vUsers
 
 		// 出局的
-		if !lessThanOrEqualZero(vUsers.AmountUsdt, 0, 1e-7) {
+		if 0 >= vUsers.AmountUsdt {
 			continue
 		}
 
@@ -2930,9 +2921,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		} else if 4 == vUsers.Last {
 			userReward4 = append(userReward4, vUsers)
 		} else if 5 == vUsers.Last {
-			userReward5 = append(userReward4, vUsers)
+			userReward5 = append(userReward5, vUsers)
 		} else if 6 == vUsers.Last {
-			userReward6 = append(userReward4, vUsers)
+			userReward6 = append(userReward6, vUsers)
 		} else {
 			continue
 		}
@@ -2984,10 +2975,11 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level1
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2 {
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
 			stop = true
 		}
+		tmp = math.Round(tmp*10000000) / 10000000
 
 		totalOne += tmp
 		// 推荐人
@@ -3045,10 +3037,11 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level2
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.3 {
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
 			stop = true
 		}
+		tmp = math.Round(tmp*10000000) / 10000000
 
 		totalOne += tmp
 		// 推荐人
@@ -3106,11 +3099,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level3
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.6, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.6 {
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
 			stop = true
 		}
 
+		tmp = math.Round(tmp*10000000) / 10000000
 		totalOne += tmp
 		// 推荐人
 		var (
@@ -3167,10 +3161,11 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level4
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*3 {
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
 			stop = true
 		}
+		tmp = math.Round(tmp*10000000) / 10000000
 
 		totalOne += tmp
 		// 推荐人
@@ -3228,10 +3223,11 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level5
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet*1.5, v.AmountUsdt, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.5 {
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
 			stop = true
 		}
+		tmp = math.Round(tmp*10000000) / 10000000
 
 		totalOne += tmp
 		// 推荐人
@@ -3289,10 +3285,11 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		tmp := v.AmountUsdt * level6
 
 		stop := false
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*1.8, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.8 {
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
 			stop = true
 		}
+		tmp = math.Round(tmp*10000000) / 10000000
 
 		totalOne += tmp
 		// 推荐人
@@ -3355,7 +3352,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	// 直推
 	for _, v := range userReward1 {
 		tmp := v.AmountUsdt * level1
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2 {
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
 		}
 
@@ -3401,7 +3398,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -3437,11 +3434,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3505,7 +3503,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward2 {
 		tmp := v.AmountUsdt * level2
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.3 {
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
 		}
 
@@ -3551,7 +3549,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -3587,11 +3585,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3655,7 +3654,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward3 {
 		tmp := v.AmountUsdt * level3
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.6, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.6 {
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
 		}
 
@@ -3701,7 +3700,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -3737,11 +3736,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3805,7 +3805,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward4 {
 		tmp := v.AmountUsdt * level4
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*3 {
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
 		}
 
@@ -3851,7 +3851,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -3887,11 +3887,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3955,7 +3956,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward5 {
 		tmp := v.AmountUsdt * level5
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*1.5, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.5 {
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
 		}
 
@@ -4001,7 +4002,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -4037,11 +4038,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -4105,7 +4107,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward6 {
 		tmp := v.AmountUsdt * level6
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*1.8, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.8 {
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
 		}
 
@@ -4151,7 +4153,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		// 出局的
-		if !lessThanOrEqualZero(tmpRecommendUser.AmountUsdt, 0, 1e-7) {
+		if 0 >= tmpRecommendUser.AmountUsdt {
 			continue
 		}
 
@@ -4187,11 +4189,12 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			enough = true
 		}
 
-		if !lessThanOrEqualZero(tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+		if tmpRecommendAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 			tmpRecommendAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 			stopRecommend = true
 		}
 
+		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -4256,7 +4259,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	// 大小区
 	for _, v := range userReward1 {
 		tmp := v.AmountUsdt * level1
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2 {
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
 		}
 
@@ -4304,6 +4307,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -4328,8 +4335,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -4341,7 +4348,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -4411,7 +4418,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -4425,6 +4432,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -4491,7 +4499,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward2 {
 		tmp := v.AmountUsdt * level2
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.3 {
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
 		}
 
@@ -4539,6 +4547,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -4563,8 +4575,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -4576,7 +4588,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -4646,7 +4658,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -4660,6 +4672,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -4726,7 +4739,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward3 {
 		tmp := v.AmountUsdt * level3
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*2.6, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.6 {
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
 		}
 
@@ -4774,6 +4787,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -4798,8 +4815,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -4811,7 +4828,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -4881,7 +4898,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -4895,6 +4912,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -4961,7 +4979,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward4 {
 		tmp := v.AmountUsdt * level4
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*3, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*3 {
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
 		}
 
@@ -5009,6 +5027,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -5033,8 +5055,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -5046,7 +5068,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -5116,7 +5138,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -5130,6 +5152,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -5196,7 +5219,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward5 {
 		tmp := v.AmountUsdt * level5
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*1.5, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.5 {
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
 		}
 
@@ -5244,6 +5267,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -5268,8 +5295,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -5281,7 +5308,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -5351,7 +5378,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -5365,6 +5392,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -5431,7 +5459,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	for _, v := range userReward6 {
 		tmp := v.AmountUsdt * level6
-		if !lessThanOrEqualZero(tmp+v.AmountUsdtGet, v.AmountUsdt*1.8, 1e-7) {
+		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.8 {
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
 		}
 
@@ -5479,6 +5507,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
+			if 0 >= tmpRecommendUser.AmountUsdt {
+				continue
+			}
+
 			// 我的下级
 			if _, ok := myLowUser[tmpUserId]; !ok {
 				fmt.Println("错误分红小区，信息缺失3：", err, tmpUserId, v)
@@ -5503,8 +5535,8 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -5516,7 +5548,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
@@ -5586,7 +5618,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				continue
 			}
 
-			if !lessThanOrEqualZero(tmpAreaAmount+tmpRecommendUser.AmountUsdtGet, tmpRecommendUser.AmountUsdt*num, 1e-7) {
+			if tmpAreaAmount+tmpRecommendUser.AmountUsdtGet >= tmpRecommendUser.AmountUsdt*num {
 				tmpAreaAmount = math.Abs(tmpRecommendUser.AmountUsdt*num - tmpRecommendUser.AmountUsdtGet)
 				stopArea = true
 			}
@@ -5600,6 +5632,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			// 分红
+			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64

@@ -2497,7 +2497,7 @@ func (ui *UserInfoRepo) UpdateUserReward(ctx context.Context, userId int64, amou
 
 	if stop {
 		res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0})
+			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0, "out_rate": gorm.Expr("out_rate + ?", 1)})
 		if res.Error != nil {
 			return 0, errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -2582,7 +2582,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId in
 
 	if stop {
 		res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0})
+			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0, "out_rate": gorm.Expr("out_rate + ?", 1)})
 		if res.Error != nil {
 			return 0, errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -2648,7 +2648,7 @@ func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, 
 
 	if stop {
 		res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0})
+			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0, "out_rate": gorm.Expr("out_rate + ?", 1)})
 		if res.Error != nil {
 			return 0, errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
