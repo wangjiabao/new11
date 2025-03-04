@@ -349,8 +349,8 @@ type UserCurrentMonthRecommendRepo interface {
 type UserInfoRepo interface {
 	UpdateUserNewTwoNewTwo(ctx context.Context, userId int64, amountRaw float64) error
 	UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
-	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
-	UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool) (int64, error)
+	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error)
+	UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool, level, i int64, address string) (int64, error)
 	UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error)
 	UpdateUserRewardRecommendUserGet(ctx context.Context, userId int64, amountUsdt float64, enough bool, amount float64) error
 	UpdateUserMyTotalAmount(ctx context.Context, userId int64, amountUsdt float64) error
@@ -3445,7 +3445,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -3596,7 +3596,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -3747,7 +3747,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -3898,7 +3898,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -4049,7 +4049,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -4200,7 +4200,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 				code int64
 			)
 
-			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend)
+			code, err = uuc.uiRepo.UpdateUserRewardRecommend(ctx, myUserRecommendUserId, tmpRecommendAmount, tmpRecommendUser.AmountUsdt, stopRecommend, v.Address)
 			if code > 0 && err != nil {
 				fmt.Println("错误分红直推：", err, tmpRecommendUser)
 			}
@@ -4438,7 +4438,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}
@@ -4678,7 +4678,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}
@@ -4918,7 +4918,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}
@@ -5158,7 +5158,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}
@@ -5398,7 +5398,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}
@@ -5638,7 +5638,7 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 					code int64
 				)
 
-				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea)
+				code, err = uuc.uiRepo.UpdateUserRewardArea(ctx, tmpRecommendUser.ID, tmpAreaAmount, tmpRecommendUser.AmountUsdt, tmpLevel, stopArea, int64(currentLevel), int64(i), v.Address)
 				if code > 0 && err != nil {
 					fmt.Println("错误分红小区：", err, tmpRecommendUser)
 				}

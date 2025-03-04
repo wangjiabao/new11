@@ -164,6 +164,7 @@ type Reward struct {
 	Type             string    `gorm:"type:varchar(45);not null"`
 	TypeRecordId     int64     `gorm:"type:int;not null"`
 	Reason           string    `gorm:"type:varchar(45);not null"`
+	Address          string    `gorm:"type:varchar(45);not null"`
 	AmountNew        float64   `gorm:"type:decimal(65,20);not null"`
 	ReasonLocationId int64     `gorm:"type:int;not null"`
 	LocationType     string    `gorm:"type:varchar(45);not null"`
@@ -540,6 +541,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			AmountUsdtGet:          item.AmountUsdtGet,
 			MyTotalAmount:          item.MyTotalAmount,
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
+			Last:                   item.Last,
 		})
 	}
 	return res, nil
@@ -2577,7 +2579,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommendUserGet(ctx context.Context, us
 }
 
 // UpdateUserRewardRecommend .
-func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error) {
+func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error) {
 	var err error
 
 	if stop {
@@ -2631,9 +2633,9 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId in
 	var reward Reward
 	reward.UserId = userBalance.UserId
 	reward.AmountNew = amountUsdt
-	reward.BalanceRecordId = userBalanceRecode.ID
 	reward.Type = "system_reward_recommend_daily" // 本次分红的行为类型
 	reward.Reason = "recommend"
+	reward.Address = address
 	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
 	if err != nil {
 		return 0, err
@@ -2643,7 +2645,7 @@ func (ui *UserInfoRepo) UpdateUserRewardRecommend(ctx context.Context, userId in
 }
 
 // UpdateUserRewardArea .
-func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool) (int64, error) {
+func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool, level, i int64, address string) (int64, error) {
 	var err error
 
 	if stop {
@@ -2705,7 +2707,9 @@ func (ui *UserInfoRepo) UpdateUserRewardArea(ctx context.Context, userId int64, 
 	var reward Reward
 	reward.UserId = userBalance.UserId
 	reward.AmountNew = amountUsdt
-	reward.BalanceRecordId = userBalanceRecode.ID
+	reward.BalanceRecordId = level
+	reward.ReasonLocationId = i
+	reward.Address = address
 	if tmpLevel {
 		reward.Type = "system_reward_area_daily_three" // 本次分红的行为类型
 		reward.Reason = "area_three"
