@@ -3344,10 +3344,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	// 更新总数
-	err = uuc.uiRepo.UpdateTotalOne(ctx, totalOne)
-	if err != nil {
-		fmt.Println("更新总数：", err, totalOne)
-	}
+	//err = uuc.uiRepo.UpdateTotalOne(ctx, totalOne)
+	//if err != nil {
+	//	fmt.Println("更新总数：", err, totalOne)
+	//}
 
 	// 直推
 	for _, v := range userReward1 {
