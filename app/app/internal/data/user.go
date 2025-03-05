@@ -23,6 +23,7 @@ type User struct {
 	AmountUsdt             float64   `gorm:"type:decimal(65,20);not null"`
 	MyTotalAmount          float64   `gorm:"type:decimal(65,20);not null"`
 	AmountUsdtGet          float64   `gorm:"type:decimal(65,20);not null"`
+	AmountUsdtOrigin       float64   `gorm:"type:decimal(65,20);not null"`
 	AmountRecommendUsdtGet float64   `gorm:"type:decimal(65,20);not null"`
 	AddressThree           string    `gorm:"type:varchar(100)"`
 	PrivateKeyThree        string    `gorm:"type:varchar(400)"`
@@ -104,16 +105,23 @@ type PriceChange struct {
 }
 
 type UserBalance struct {
-	ID               int64     `gorm:"primarykey;type:int"`
-	UserId           int64     `gorm:"type:int"`
-	BalanceUsdt      int64     `gorm:"type:bigint"`
-	BalanceUsdtNew   int64     `gorm:"type:bigint"`
-	BalanceUsdtFloat float64   `gorm:"type:decimal(65,20);not null"`
-	BalanceRawFloat  float64   `gorm:"type:decimal(65,20);not null"`
-	BalanceDhb       int64     `gorm:"type:bigint"`
-	BalanceC         int64     `gorm:"type:bigint"`
-	CreatedAt        time.Time `gorm:"type:datetime;not null"`
-	UpdatedAt        time.Time `gorm:"type:datetime;not null"`
+	ID                     int64     `gorm:"primarykey;type:int"`
+	UserId                 int64     `gorm:"type:int"`
+	BalanceUsdt            int64     `gorm:"type:bigint"`
+	BalanceUsdtNew         int64     `gorm:"type:bigint"`
+	BalanceUsdtFloat       float64   `gorm:"type:decimal(65,20);not null"`
+	BalanceRawFloat        float64   `gorm:"type:decimal(65,20);not null"`
+	BalanceDhb             int64     `gorm:"type:bigint"`
+	BalanceC               int64     `gorm:"type:bigint"`
+	CreatedAt              time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt              time.Time `gorm:"type:datetime;not null"`
+	AreaTotalFloat         float64   `gorm:"type:decimal(65,20);not null"`
+	AreaTotalFloatTwo      float64   `gorm:"type:decimal(65,20);not null"`
+	RecommendTotalFloat    float64   `gorm:"type:decimal(65,20);not null"`
+	RecommendLevelFloat    float64   `gorm:"type:decimal(65,20);not null"`
+	RecommendTotalFloatTwo float64   `gorm:"type:decimal(65,20);not null"`
+	AllFloat               float64   `gorm:"type:decimal(65,20);not null"`
+	LocationTotalFloat     float64   `gorm:"type:decimal(65,20);not null"`
 }
 
 type UserRecommendArea struct {
@@ -174,11 +182,13 @@ type Reward struct {
 	AmountB          int64     `gorm:"type:bigint;not null"`
 	BalanceRecordId  int64     `gorm:"type:int;not null"`
 	Type             string    `gorm:"type:varchar(45);not null"`
+	Address          string    `gorm:"type:varchar(45);not null"`
 	TypeRecordId     int64     `gorm:"type:int;not null"`
 	Reason           string    `gorm:"type:varchar(45);not null"`
-	Address          string    `gorm:"type:varchar(45);not null"`
 	AmountNew        float64   `gorm:"type:decimal(65,20);not null"`
+	AmountNewTwo     float64   `gorm:"type:decimal(65,20);not null"`
 	ReasonLocationId int64     `gorm:"type:int;not null"`
+	Status           int64     `gorm:"type:int;not null"`
 	LocationType     string    `gorm:"type:varchar(45);not null"`
 	CreatedAt        time.Time `gorm:"type:datetime;not null"`
 	UpdatedAt        time.Time `gorm:"type:datetime;not null"`
@@ -519,11 +529,15 @@ func (u *UserRepo) GetUserByUserIds(ctx context.Context, userIds ...int64) (map[
 	res := make(map[int64]*biz.User, 0)
 	for _, item := range users {
 		res[item.ID] = &biz.User{
-			ID:           item.ID,
-			Address:      item.Address,
-			AddressTwo:   item.AddressTwo,
-			AddressThree: item.AddressThree,
-			OutRate:      item.OutRate,
+			ID:               item.ID,
+			Address:          item.Address,
+			AddressTwo:       item.AddressTwo,
+			AddressThree:     item.AddressThree,
+			OutRate:          item.OutRate,
+			AmountUsdtGet:    item.AmountUsdtGet,
+			AmountUsdt:       item.AmountUsdt,
+			AmountUsdtOrigin: item.AmountUsdtOrigin,
+			MyTotalAmount:    item.MyTotalAmount,
 		}
 	}
 	return res, nil
@@ -698,15 +712,18 @@ func (u *UserRepo) GetUsers(ctx context.Context, b *biz.Pagination, address stri
 	res := make([]*biz.User, 0)
 	for _, item := range users {
 		res = append(res, &biz.User{
-			ID:             item.ID,
-			Address:        item.Address,
-			CreatedAt:      item.CreatedAt,
-			Amount:         item.Amount,
-			AmountUsdt:     item.AmountUsdt,
-			AmountBiw:      item.AmountBiw,
-			OutRate:        item.OutRate,
-			RecommendLevel: item.RecommendLevel,
-			Lock:           item.Lock,
+			ID:               item.ID,
+			Address:          item.Address,
+			CreatedAt:        item.CreatedAt,
+			Amount:           item.Amount,
+			AmountUsdt:       item.AmountUsdt,
+			AmountBiw:        item.AmountBiw,
+			OutRate:          item.OutRate,
+			RecommendLevel:   item.RecommendLevel,
+			Lock:             item.Lock,
+			AmountUsdtOrigin: item.AmountUsdtOrigin,
+			AmountUsdtGet:    item.AmountUsdtGet,
+			MyTotalAmount:    item.MyTotalAmount,
 		})
 	}
 	return res, nil, count
@@ -2063,6 +2080,8 @@ func (ub *UserBalanceRepo) GetWithdraws(ctx context.Context, b *biz.Pagination, 
 			Status:          withdraw.Status,
 			Type:            withdraw.Type,
 			CreatedAt:       withdraw.CreatedAt,
+			AmountNew:       withdraw.AmountNew,
+			RelAmountNew:    withdraw.RelAmountNew,
 		})
 	}
 	return res, nil, count
@@ -4533,16 +4552,17 @@ func (ub *UserBalanceRepo) GetUserRewards(ctx context.Context, b *biz.Pagination
 	}
 
 	if "" != reason {
-		if "exchange" == reason {
-			instance = instance.Where("reason = ? or reason = ?", "exchange", "exchange_2")
-		} else {
-			instance = instance.Where("reason=?", reason)
-		}
+		instance = instance.Where("reason=?", reason)
 	} else {
-		instance = instance.Where("reason != ?", "price_change")
+		tmpReason := make([]string, 0)
+		tmpReason = append(tmpReason, "area")
+		tmpReason = append(tmpReason, "area_two")
+		tmpReason = append(tmpReason, "area_three")
+		tmpReason = append(tmpReason, "recommend")
+		tmpReason = append(tmpReason, "location")
+		tmpReason = append(tmpReason, "stake_reward")
+		instance = instance.Where("reason in (?)", tmpReason)
 	}
-
-	instance = instance.Where("user_id<?", 999999999)
 
 	instance = instance.Count(&count)
 	if err := instance.Scopes(Paginate(b.PageNum, b.PageSize)).Order("id desc").Find(&rewards).Error; err != nil {
@@ -4566,6 +4586,10 @@ func (ub *UserBalanceRepo) GetUserRewards(ctx context.Context, b *biz.Pagination
 			ReasonLocationId: reward.ReasonLocationId,
 			LocationType:     reward.LocationType,
 			CreatedAt:        reward.CreatedAt,
+			AmountNew:        reward.AmountNew,
+			AmountNewTwo:     reward.AmountNewTwo,
+			Status:           reward.Status,
+			Address:          reward.Address,
 		})
 	}
 	return res, nil, count
@@ -4691,11 +4715,20 @@ func (ub UserBalanceRepo) GetUserBalanceByUserIds(ctx context.Context, userIds .
 
 	for _, userBalance := range userBalances {
 		res[userBalance.UserId] = &biz.UserBalance{
-			ID:          userBalance.ID,
-			UserId:      userBalance.UserId,
-			BalanceUsdt: userBalance.BalanceUsdt,
-			BalanceDhb:  userBalance.BalanceDhb,
-			BalanceC:    userBalance.BalanceC,
+			ID:                     userBalance.ID,
+			UserId:                 userBalance.UserId,
+			BalanceUsdt:            userBalance.BalanceUsdt,
+			BalanceDhb:             userBalance.BalanceDhb,
+			BalanceC:               userBalance.BalanceC,
+			BalanceUsdtFloat:       userBalance.BalanceUsdtFloat,
+			BalanceRawFloat:        userBalance.BalanceRawFloat,
+			AreaTotalFloat:         userBalance.AreaTotalFloat,
+			AreaTotalFloatTwo:      userBalance.AreaTotalFloatTwo,
+			RecommendTotalFloat:    userBalance.RecommendTotalFloat,
+			LocationTotalFloat:     userBalance.LocationTotalFloat,
+			AllFloat:               userBalance.AllFloat,
+			RecommendLevelFloat:    userBalance.RecommendLevelFloat,
+			RecommendTotalFloatTwo: userBalance.RecommendTotalFloatTwo,
 		}
 	}
 

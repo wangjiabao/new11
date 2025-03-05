@@ -578,14 +578,19 @@ message AdminRewardListRequest {
 message AdminRewardListReply {
 	repeated List rewards = 1;
 	message List {
-		string created_at = 1; // 时间
-		string amount = 2; // 数量
+		string createdAt = 1; // 时间
+		string amount = 2; // 数量1
+		string amountNana = 3; // 数量2
 		string address = 5; // 地址
-		string reason = 6; // 原因 每一条替换文案 认购reason=buy，提现reason=withdraw，兑换reason=exchange，前四名reason=four，挖矿reason=location，矩阵reason=area，直推reason=recommend
-		string addressTwo = 7;
-		int64 num = 8;
+		// 原因 每一条替换文案
+		// 静态收益reason=location，团队收益reason=area，质押收益reason=stake_reward，
+		// 平级收益reason=area_three，社区收益reason=area_two，直推收益reason=recommend，
+		string reason = 6;
+		string addressTwo = 7; // 分享地址
+		int64 num = 8;		// 分享代数
+		int64 level = 9; // 级别
 	}
-	 int64 count = 2;
+	int64 count = 2;
 }
 
 
@@ -636,24 +641,37 @@ message AdminUserListRequest {
 message AdminUserListReply { // 用户信息
 	repeated UserList users = 1;
 	message UserList {
-		int64 user_id = 8;
-		string created_at = 1; // 创建时间
+		int64 userId = 8;
+		string createdAt = 1; // 创建时间
 		string address = 2; // 地址
-		string balanceUsdt = 3; // 可提usdt数量
-		string balanceDhb = 4; // isps数量
-		string balanceC = 15; // ispay数量
+		string amountUsdtCurrent = 15; // 当前认购金额
+		string amountUsdtGet = 14; // 已释放
+		string balanceUsdt = 3; // rsdt数量
+		string balanceDhb = 4; // rwb数量
 		int64 out = 7; // 出局次数
-		int64 areaTotal = 9; // 总业绩
-		int64 areaMin = 10; // 小区
-		int64 areaMax = 11; // 大区
+		double areaTotal = 9; // 总业绩
+		double areaMin = 10; // 小区
+		double areaMax = 11; // 大区
 		int64 vip = 5; // 会员等级
 		int64 historyRecommend = 6; // 历史推荐人数
-		int64 amountUsdt = 12;
-		int64 amountBiw = 13;
-		int64 recommendLevel = 14;
-		int64 lock = 17;
 	}
 
+	int64 count = 2;
+}
+
+message AdminBuyListRequest {
+	int64 page = 1;
+	string address = 2;
+}
+
+message AdminBuyListReply {
+	repeated List rewards = 1;
+	message List {
+		int64 id = 10;
+		string createdAt = 1; // 时间
+		string amount = 2; // 金额
+		string address = 5; // 地址
+	}
 	int64 count = 2;
 }
 
@@ -665,7 +683,7 @@ message RecordListRequest {
 message RecordListReply { // 投资列表
 	repeated LocationList locations = 1;
 	message  LocationList {
-		string created_at = 1; // 时间
+		string createdAt = 1; // 时间
 		string address = 2; // 地址
 		string addressTwo = 3; // 地址
 		string addressThree = 4; // 地址
@@ -675,7 +693,6 @@ message RecordListReply { // 投资列表
 
 	int64 count = 2;
 }
-
 
 message AdminLocationListRequest {
 	int64 page = 1;
