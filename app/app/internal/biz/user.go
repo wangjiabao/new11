@@ -40,6 +40,17 @@ type User struct {
 	CreatedAt              time.Time
 }
 
+type Stake struct {
+	ID        int64
+	UserId    int64
+	Status    int64
+	Day       int64
+	Amount    float64
+	Reward    float64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type Admin struct {
 	ID       int64
 	Password string
@@ -85,11 +96,17 @@ type UserRecommend struct {
 }
 
 type UserBalanceRecord struct {
-	ID        int64
-	UserId    int64
-	Amount    int64
-	CoinType  string
-	CreatedAt time.Time
+	ID           int64
+	UserId       int64
+	Balance      int64
+	Amount       int64
+	Type         string
+	CoinType     string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	BalanceNew   float64
+	AmountNew    float64
+	AmountNewTwo float64
 }
 
 type BalanceReward struct {
@@ -214,6 +231,7 @@ type ConfigRepo interface {
 
 type UserBalanceRepo interface {
 	GetPriceChangeConfig(ctx context.Context) (*PriceChange, error)
+	GetStake(ctx context.Context) ([]*Stake, error)
 	CreateUserBalance(ctx context.Context, u *User) (*UserBalance, error)
 	LocationReward(ctx context.Context, userId int64, amount int64, locationId int64, myLocationId int64, locationType string, status string) (int64, error)
 	WithdrawReward(ctx context.Context, userId int64, amount int64, locationId int64, myLocationId int64, locationType string, status string) (int64, error)
@@ -232,7 +250,7 @@ type UserBalanceRepo interface {
 	SystemReward(ctx context.Context, amount int64, locationId int64) error
 	SystemDailyReward(ctx context.Context, amount int64, locationId int64) error
 	GetSystemYesterdayDailyReward(ctx context.Context, day int) (*Reward, error)
-	GetSystemYesterdayLocationReward(ctx context.Context, day int) ([]*Reward, error)
+	GetSystemYesterdayLocationReward(ctx context.Context, day int) ([]*UserBalanceRecord, error)
 	SystemFee(ctx context.Context, amount int64, locationId int64) error
 	UserFee(ctx context.Context, userId int64, amount int64) (int64, error)
 	UserDailyFee(ctx context.Context, userId int64, amount int64, status string) (int64, error)
@@ -348,6 +366,8 @@ type UserCurrentMonthRecommendRepo interface {
 
 type UserInfoRepo interface {
 	UpdateUserNewTwoNewTwo(ctx context.Context, userId int64, amountRaw float64) error
+	UpdateUserRewardStakeReomve(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
+	UpdateUserRewardStake(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error)
 	UpdateUserReward(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	UpdateUserRewardRecommend(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, address string) (int64, error)
 	UpdateUserRewardArea(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, tmpLevel, stop bool, level, i int64, address string) (int64, error)
@@ -5698,13 +5718,148 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	// 社区奖励
-	//var (
-	//	buys []*Reward
-	//)
-	//buys, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx, -1)
-	//if nil != err {
-	//	return nil, nil
-	//}
+	var (
+		exchanges            []*UserBalanceRecord
+		totalExchange        float64
+		totalExchangeRate    float64
+		totalExchangeRateTwo float64
+	)
+	exchanges, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx, -1)
+	if nil != err {
+		return nil, nil
+	}
+
+	for _, v := range exchanges {
+		totalExchange += v.AmountNewTwo
+	}
+	totalExchangeRate = totalExchange * 0.4
+	totalExchangeRateTwo = totalExchange * 0.6
+
+	fmt.Println("今日发放兑换：", totalExchange, totalExchangeRate, totalExchangeRateTwo)
+
+	if 0 >= totalExchange {
+		return nil, nil
+	}
+
+	var (
+		stake         []*Stake
+		stakeTotal    float64
+		stakeTotalTwo float64
+	)
+	stake, err = uuc.ubRepo.GetStake(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	stakeOne := make([]*Stake, 0)
+	stakeOneRemove := make([]*Stake, 0)
+	stakeTwo := make([]*Stake, 0)
+	stakeTwoRemove := make([]*Stake, 0)
+	for _, v := range stake {
+		if 0 != v.Status {
+			continue
+		}
+
+		if 10 == v.Day {
+			if v.CreatedAt.Add(10 * 24 * time.Hour).Before(time.Now()) {
+				stakeOneRemove = append(stakeOneRemove, v)
+				continue
+			}
+
+			stakeTotal += v.Amount
+			stakeOne = append(stakeOne, v)
+		}
+
+		if 30 == v.Day {
+			if v.CreatedAt.Add(30 * 24 * time.Hour).Before(time.Now()) {
+				stakeTwoRemove = append(stakeTwoRemove, v)
+				continue
+			}
+
+			stakeTotalTwo += v.Amount
+			stakeTwo = append(stakeTwo, v)
+		}
+	}
+
+	for _, v := range stakeOne {
+		tmpStakeAmount := math.Round(v.Amount/stakeTotal*totalExchangeRate*10000000) / 10000000
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			var (
+				code int64
+			)
+
+			code, err = uuc.uiRepo.UpdateUserRewardStake(ctx, v.UserId, tmpStakeAmount, v.ID)
+			if code > 0 && err != nil {
+				fmt.Println("错误stake分红1：", err, v, tmpStakeAmount)
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily stake", err, v, tmpStakeAmount)
+		}
+	}
+
+	for _, v := range stakeTwo {
+		tmpStakeAmount := math.Round(v.Amount/stakeTotal*totalExchangeRateTwo*10000000) / 10000000
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			var (
+				code int64
+			)
+
+			code, err = uuc.uiRepo.UpdateUserRewardStake(ctx, v.UserId, tmpStakeAmount, v.ID)
+			if code > 0 && err != nil {
+				fmt.Println("错误stake分红1：", err, v, tmpStakeAmount)
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily stake", err, v, tmpStakeAmount)
+		}
+	}
+
+	for _, v := range stakeOneRemove {
+		tmpStakeAmount := math.Round((v.Amount+v.Reward)*10000000) / 10000000
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			var (
+				code int64
+			)
+
+			code, err = uuc.uiRepo.UpdateUserRewardStakeReomve(ctx, v.UserId, tmpStakeAmount, v.ID)
+			if code > 0 && err != nil {
+				fmt.Println("错误stake分红1：", err, v, tmpStakeAmount)
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily stake", err, v, tmpStakeAmount)
+		}
+	}
+
+	for _, v := range stakeTwoRemove {
+		tmpStakeAmount := math.Round((v.Amount+v.Reward)*10000000) / 10000000
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			var (
+				code int64
+			)
+
+			code, err = uuc.uiRepo.UpdateUserRewardStakeReomve(ctx, v.UserId, tmpStakeAmount, v.ID)
+			if code > 0 && err != nil {
+				fmt.Println("错误stake分红1：", err, v, tmpStakeAmount)
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			fmt.Println("err reward daily stake", err, v, tmpStakeAmount)
+		}
+	}
 	//
 	//for _, vBuys := range buys {
 	//	userId := vBuys.UserId

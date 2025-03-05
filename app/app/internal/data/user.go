@@ -35,6 +35,17 @@ type User struct {
 	UpdatedAt              time.Time `gorm:"type:datetime;not null"`
 }
 
+type Stake struct {
+	ID        int64     `gorm:"primarykey;type:int"`
+	UserId    int64     `gorm:"type:int;not null"`
+	Status    int64     `gorm:"type:int;not null"`
+	Day       int64     `gorm:"type:int;not null"`
+	Amount    float64   `gorm:"type:decimal(65,20);not null"`
+	Reward    float64   `gorm:"type:decimal(65,20);not null"`
+	CreatedAt time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt time.Time `gorm:"type:datetime;not null"`
+}
+
 type UserArea struct {
 	ID         int64     `gorm:"primarykey;type:int"`
 	UserId     int64     `gorm:"type:int;not null"`
@@ -143,16 +154,17 @@ type Trade struct {
 }
 
 type UserBalanceRecord struct {
-	ID         int64     `gorm:"primarykey;type:int"`
-	UserId     int64     `gorm:"type:int"`
-	Balance    int64     `gorm:"type:bigint"`
-	Amount     int64     `gorm:"type:bigint"`
-	BalanceNew float64   `gorm:"type:decimal(65,20);not null"`
-	AmountNew  float64   `gorm:"type:decimal(65,20);not null"`
-	Type       string    `gorm:"type:varchar(45);not null"`
-	CoinType   string    `gorm:"type:varchar(45);not null"`
-	CreatedAt  time.Time `gorm:"type:datetime;not null"`
-	UpdatedAt  time.Time `gorm:"type:datetime;not null"`
+	ID           int64     `gorm:"primarykey;type:int"`
+	UserId       int64     `gorm:"type:int"`
+	Balance      int64     `gorm:"type:bigint"`
+	Amount       int64     `gorm:"type:bigint"`
+	Type         string    `gorm:"type:varchar(45);not null"`
+	CoinType     string    `gorm:"type:varchar(45);not null"`
+	CreatedAt    time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt    time.Time `gorm:"type:datetime;not null"`
+	BalanceNew   float64   `gorm:"type:decimal(65,20);not null"`
+	AmountNew    float64   `gorm:"type:decimal(65,20);not null"`
+	AmountNewTwo float64   `gorm:"type:decimal(65,20);not null"`
 }
 
 type Reward struct {
@@ -2468,6 +2480,21 @@ func (ui *UserInfoRepo) UpdateUserNewTwoNewTwo(ctx context.Context, userId int64
 	//if res.Error != nil {
 	//	return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 	//}
+
+	var (
+		err    error
+		reward Reward
+	)
+
+	reward.UserId = userId
+	reward.AmountNew = amountRaw
+	reward.Type = "RAW"       // 本次分红的行为类型
+	reward.Reason = "deposit" // 给我分红的理由
+	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return errors.New(500, "CREATE_LOCATION_ERROR", "占位信息创建失败")
+	}
+
 	return nil
 }
 
@@ -2491,6 +2518,66 @@ func (ui *UserInfoRepo) UpdateTotalOne(ctx context.Context, amountUsdt float64) 
 	}
 
 	return nil
+}
+
+// UpdateUserRewardStake .
+func (ui *UserInfoRepo) UpdateUserRewardStake(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error) {
+	var err error
+
+	//if err = ui.data.DB(ctx).Table("user_balance").
+	//	Where("user_id=?", userId).
+	//	Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float + ?", amountUsdt)}).Error; nil != err {
+	//	return 0, errors.NotFound("user balance err", "user balance not found")
+	//}
+
+	if err = ui.data.DB(ctx).Table("stake").
+		Where("id=?", stakeId).
+		Updates(map[string]interface{}{"reward": gorm.Expr("reward + ?", amountUsdt)}).Error; nil != err {
+		return 0, errors.NotFound("user balance err", "user balance not found")
+	}
+
+	var reward Reward
+	reward.UserId = userId
+	reward.AmountNew = amountUsdt
+	reward.BalanceRecordId = stakeId
+	reward.Type = "system_reward_location_daily" // 本次分红的行为类型
+	reward.Reason = "stake_reward"               // 给我分红的理由
+	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return 1, nil
+}
+
+// UpdateUserRewardStakeReomve .
+func (ui *UserInfoRepo) UpdateUserRewardStakeReomve(ctx context.Context, userId int64, amountUsdt float64, stakeId int64) (int64, error) {
+	var err error
+
+	if err = ui.data.DB(ctx).Table("user_balance").
+		Where("user_id=?", userId).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float + ?", amountUsdt)}).Error; nil != err {
+		return 0, errors.NotFound("user balance err", "user balance not found")
+	}
+
+	if err = ui.data.DB(ctx).Table("stake").
+		Where("id=?", stakeId).
+		Updates(map[string]interface{}{"status": 1}).Error; nil != err {
+		return 0, errors.NotFound("user balance err", "user balance not found")
+	}
+
+	var reward Reward
+	reward.UserId = userId
+	reward.AmountNew = amountUsdt
+	reward.BalanceRecordId = stakeId
+	reward.Type = "system_reward_location_daily" // 本次分红的行为类型
+	reward.Reason = "stake_reward_remove"        // 给我分红的理由
+	err = ui.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return 1, nil
 }
 
 // UpdateUserReward .
@@ -2957,6 +3044,35 @@ func (ub *UserBalanceRepo) PriceChange(ctx context.Context, userId int64, reward
 	return nil
 }
 
+// GetStake .
+func (ub *UserBalanceRepo) GetStake(ctx context.Context) ([]*biz.Stake, error) {
+	var stake []*Stake
+	res := make([]*biz.Stake, 0)
+	if err := ub.data.DB(ctx).Table("stake").
+		Where("status=?", 0).Find(&stake).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+
+		return nil, errors.New(500, "PRICE CHANGE ERROR", err.Error())
+	}
+
+	for _, v := range stake {
+		res = append(res, &biz.Stake{
+			ID:        v.ID,
+			UserId:    v.UserId,
+			Status:    v.Status,
+			Day:       v.Day,
+			Amount:    v.Amount,
+			Reward:    v.Reward,
+			CreatedAt: v.CreatedAt,
+			UpdatedAt: v.UpdatedAt,
+		})
+	}
+
+	return res, nil
+}
+
 // GetPriceChangeConfig .
 func (ub *UserBalanceRepo) GetPriceChangeConfig(ctx context.Context) (*biz.PriceChange, error) {
 	var priceChange PriceChange
@@ -3187,8 +3303,8 @@ func (ub *UserBalanceRepo) SystemWithdrawReward(ctx context.Context, amount int6
 }
 
 // GetSystemYesterdayLocationReward .
-func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context, day int) ([]*biz.Reward, error) {
-	var rewards []*Reward
+func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context, day int) ([]*biz.UserBalanceRecord, error) {
+	var rewards []*UserBalanceRecord
 
 	now := time.Now().UTC().AddDate(0, 0, day)
 	var startDate time.Time
@@ -3206,9 +3322,8 @@ func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context,
 	if err := ub.data.db.
 		Where("created_at>=?", todayStart).
 		Where("created_at<?", todayEnd).
-		Where("type=?", "RAW").
-		Where("reason=?", "buy").
-		Table("reward").Find(&rewards).Error; err != nil {
+		Where("type=?", "exchange").
+		Table("user_balance_record").Find(&rewards).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.NotFound("REWARD_NOT_FOUND", "reward not found")
 		}
@@ -3216,19 +3331,20 @@ func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context,
 		return nil, errors.New(500, "REWARD ERROR", err.Error())
 	}
 
-	res := make([]*biz.Reward, 0)
+	res := make([]*biz.UserBalanceRecord, 0)
 	for _, reward := range rewards {
-		res = append(res, &biz.Reward{
-			ID:               reward.ID,
-			UserId:           reward.UserId,
-			Amount:           reward.Amount,
-			AmountNew:        reward.AmountNew,
-			BalanceRecordId:  reward.BalanceRecordId,
-			Type:             reward.Type,
-			TypeRecordId:     reward.TypeRecordId,
-			Reason:           reward.Reason,
-			ReasonLocationId: reward.ReasonLocationId,
-			LocationType:     reward.LocationType,
+		res = append(res, &biz.UserBalanceRecord{
+			ID:           reward.ID,
+			UserId:       reward.UserId,
+			Balance:      reward.Balance,
+			Amount:       reward.Amount,
+			Type:         reward.Type,
+			CoinType:     reward.CoinType,
+			CreatedAt:    reward.CreatedAt,
+			UpdatedAt:    reward.UpdatedAt,
+			BalanceNew:   reward.BalanceNew,
+			AmountNew:    reward.AmountNew,
+			AmountNewTwo: reward.AmountNewTwo,
 		})
 	}
 
