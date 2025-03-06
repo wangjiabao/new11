@@ -3001,6 +3001,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 		tmp = math.Round(tmp*10000000) / 10000000
 
+		if 0 >= tmp {
+			continue
+		}
 		totalOne += tmp
 		// 推荐人
 		var (
@@ -3062,6 +3065,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			stop = true
 		}
 		tmp = math.Round(tmp*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
 
 		totalOne += tmp
 		// 推荐人
@@ -3125,6 +3131,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmp = math.Round(tmp*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
+
 		totalOne += tmp
 		// 推荐人
 		var (
@@ -3186,6 +3196,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			stop = true
 		}
 		tmp = math.Round(tmp*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
 
 		totalOne += tmp
 		// 推荐人
@@ -3248,7 +3261,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			stop = true
 		}
 		tmp = math.Round(tmp*10000000) / 10000000
-
+		if 0 >= tmp {
+			continue
+		}
 		totalOne += tmp
 		// 推荐人
 		var (
@@ -3310,6 +3325,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			stop = true
 		}
 		tmp = math.Round(tmp*10000000) / 10000000
+		if 0 >= tmp {
+			continue
+		}
 
 		totalOne += tmp
 		// 推荐人
@@ -3376,6 +3394,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -3460,6 +3482,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3527,6 +3552,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -3611,6 +3640,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
+
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3678,6 +3711,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -3762,6 +3799,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3829,6 +3869,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -3913,6 +3957,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -3980,6 +4027,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -4064,6 +4115,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -4131,6 +4185,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -4215,6 +4273,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 		}
 
 		tmpRecommendAmount = math.Round(tmpRecommendAmount*10000000) / 10000000
+		if 0 >= tmpRecommendAmount {
+			continue
+		}
+
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 			var (
 				code int64
@@ -4283,6 +4345,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -4453,6 +4519,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -4523,6 +4592,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -4693,6 +4766,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -4763,6 +4839,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -4933,6 +5013,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -5003,6 +5086,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -5173,6 +5260,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -5243,6 +5333,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -5413,6 +5507,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
@@ -5483,6 +5580,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
 		}
 
+		if 0 >= tmp {
+			continue
+		}
+
 		// 推荐人
 		var (
 			userRecommend *UserRecommend
@@ -5653,6 +5754,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 			// 分红
 			tmpAreaAmount = math.Round(tmpAreaAmount*10000000) / 10000000
+			if 0 >= tmpAreaAmount {
+				continue
+			}
 			if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 				var (
 					code int64
