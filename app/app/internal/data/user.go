@@ -4562,6 +4562,7 @@ func (ub *UserBalanceRepo) GetUserRewards(ctx context.Context, b *biz.Pagination
 		tmpReason = append(tmpReason, "recommend")
 		tmpReason = append(tmpReason, "location")
 		tmpReason = append(tmpReason, "stake_reward")
+		tmpReason = append(tmpReason, "recommend_level")
 		instance = instance.Where("reason in (?)", tmpReason)
 	}
 
