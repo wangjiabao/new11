@@ -648,6 +648,8 @@ message AdminUserListReply { // 用户信息
 		string amountUsdtGet = 14; // 已释放
 		string balanceUsdt = 3; // rsdt数量
 		string balanceDhb = 4; // rwb数量
+		string balanceKsdt = 151; // ksdt数量
+		int64 recommendLevel = 152; // 特殊奖励
 		int64 out = 7; // 出局次数
 		double areaTotal = 9; // 总业绩
 		double areaMin = 10; // 小区

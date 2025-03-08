@@ -1826,6 +1826,10 @@ components:
                     type: string
                 balanceDhb:
                     type: string
+                balanceKsdt:
+                    type: string
+                recommendLevel:
+                    type: string
                 out:
                     type: string
                 areaTotal:
