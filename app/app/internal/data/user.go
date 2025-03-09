@@ -2920,6 +2920,17 @@ func (ui *UserInfoRepo) UpdateUserRecommendLevel(ctx context.Context, userId int
 	return nil
 }
 
+// UpdateUserRecommendLevel2 .
+func (ui *UserInfoRepo) UpdateUserRecommendLevel2(ctx context.Context, userId int64, level uint64) error {
+	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
+		Updates(map[string]interface{}{"vip": level})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
+	return nil
+}
+
 // UpdateUserLast .
 func (ui *UserInfoRepo) UpdateUserLast(ctx context.Context, userId int64, coinType string) error {
 	if "USDT" == coinType {

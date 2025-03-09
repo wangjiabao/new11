@@ -430,6 +430,12 @@ service App {
 			body: "send_body"
 		};
 	};
+
+	rpc AdminBuyList (AdminBuyListRequest) returns (AdminBuyListReply) {
+		option (google.api.http) = {
+			get: "/api/admin_dhb/buy_list"
+		};
+	};
 }
 
 message EthAuthorizeRequest {

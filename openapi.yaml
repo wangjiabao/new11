@@ -211,6 +211,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/admin_dhb/buy_list:
+        get:
+            tags:
+                - App
+            operationId: App_AdminBuyList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: address
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AdminBuyListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/admin_dhb/change_password:
         post:
             tags:
@@ -1526,6 +1553,26 @@ components:
                 userId:
                     type: string
                 amount:
+                    type: string
+        AdminBuyListReply:
+            type: object
+            properties:
+                rewards:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AdminBuyListReply_List'
+                count:
+                    type: string
+        AdminBuyListReply_List:
+            type: object
+            properties:
+                id:
+                    type: string
+                createdAt:
+                    type: string
+                amount:
+                    type: string
+                address:
                     type: string
         AdminChangePasswordReply:
             type: object

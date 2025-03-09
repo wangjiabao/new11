@@ -391,6 +391,7 @@ type UserInfoRepo interface {
 	UpdateTotalOne(ctx context.Context, amountUsdt float64) error
 	UpdateUserNewTwoNewThree(ctx context.Context, userId int64, amount uint64, last int64, coinType string) error
 	UpdateUserRecommendLevel(ctx context.Context, userId int64, level uint64) error
+	UpdateUserRecommendLevel2(ctx context.Context, userId int64, level uint64) error
 	UpdateUserLast(ctx context.Context, userId int64, coinType string) error
 	CreateUserInfo(ctx context.Context, u *User) (*UserInfo, error)
 	GetUserInfoByUserId(ctx context.Context, userId int64) (*UserInfo, error)
@@ -1247,7 +1248,6 @@ func (uuc *UserUseCase) AdminRecommendList(ctx context.Context, req *v1.AdminUse
 	var (
 		userRecommends []*UserRecommend
 		userRecommend  *UserRecommend
-		userWithdraws  []*Withdraw
 		userIdsMap     map[int64]int64
 		userIds        []int64
 		users          map[int64]*User
@@ -1300,69 +1300,17 @@ func (uuc *UserUseCase) AdminRecommendList(ctx context.Context, req *v1.AdminUse
 		return res, nil
 	}
 
-	userWithdraws, err = uuc.ubRepo.GetWithdrawByUserIds(ctx, userIds)
-	if nil != err {
-		return res, nil
-	}
-	useWithdrawMapAmount := make(map[int64]int64, 0)
-	useWithdrawMapRelAmount := make(map[int64]int64, 0)
-	for _, vUserWithdraws := range userWithdraws {
-		if _, ok := useWithdrawMapAmount[vUserWithdraws.UserId]; ok {
-			useWithdrawMapAmount[vUserWithdraws.UserId] += vUserWithdraws.Amount
-		} else {
-			useWithdrawMapAmount[vUserWithdraws.UserId] = vUserWithdraws.Amount
-		}
-
-		if _, ok := useWithdrawMapRelAmount[vUserWithdraws.UserId]; ok {
-			useWithdrawMapRelAmount[vUserWithdraws.UserId] += vUserWithdraws.RelAmount
-		} else {
-			useWithdrawMapRelAmount[vUserWithdraws.UserId] = vUserWithdraws.RelAmount
-		}
-	}
-
 	for _, v := range userRecommends {
 		if _, ok := users[v.UserId]; !ok {
 			continue
 		}
 
-		var (
-			myAllRecommends           []*UserRecommend
-			tmpMyAllRecommendsUserIds []int64
-			totalWithdraw             int64
-		)
-
-		myCode := v.RecommendCode + "D" + strconv.FormatInt(v.UserId, 10)
-		myAllRecommends, err = uuc.urRepo.GetUserRecommendLikeCode(ctx, myCode)
-		if 0 < len(myAllRecommends) {
-			for _, vMyAllRecommends := range myAllRecommends {
-				tmpMyAllRecommendsUserIds = append(tmpMyAllRecommendsUserIds, vMyAllRecommends.UserId)
-			}
-
-			if 0 < len(tmpMyAllRecommendsUserIds) {
-				totalWithdraw, err = uuc.ubRepo.GetUserWithdrawUsdtTotalByUserIds(ctx, tmpMyAllRecommendsUserIds)
-			}
-		}
-
-		var (
-			tmpRelAmount int64
-			tmpAmount    int64
-		)
-		if _, ok := useWithdrawMapRelAmount[v.UserId]; ok {
-			tmpRelAmount = useWithdrawMapRelAmount[v.UserId]
-		}
-
-		if _, ok := useWithdrawMapAmount[v.UserId]; ok {
-			tmpAmount = useWithdrawMapAmount[v.UserId]
-		}
-
 		res.Users = append(res.Users, &v1.AdminUserRecommendReply_List{
-			Address:            users[v.UserId].Address,
-			Id:                 v.ID,
-			UserId:             v.UserId,
-			CreatedAt:          v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-			Amount:             fmt.Sprintf("%.2f", float64(tmpAmount)/float64(100000)),
-			RelAmount:          fmt.Sprintf("%.2f", float64(tmpRelAmount)/float64(100000)),
-			RecommendAllAmount: fmt.Sprintf("%.2f", float64(totalWithdraw)/float64(100000)),
+			Address:   users[v.UserId].Address,
+			Id:        v.ID,
+			UserId:    v.UserId,
+			CreatedAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+			Amount:    fmt.Sprintf("%.2f", users[v.UserId].MyTotalAmount),
 		})
 	}
 
@@ -1860,23 +1808,15 @@ func (uuc *UserUseCase) AdminPasswordUpdate(ctx context.Context, req *v1.AdminPa
 
 func (uuc *UserUseCase) AdminVipUpdate(ctx context.Context, req *v1.AdminVipUpdateRequest) (*v1.AdminVipUpdateReply, error) {
 	var (
-		location *LocationNew
-		err      error
+		err error
 	)
 
-	location, err = uuc.locationRepo.GetMyLocationLastRunning(ctx, req.SendBody.UserId)
-	if nil == location {
-		return &v1.AdminVipUpdateReply{}, nil
-	}
-
-	res := &v1.AdminVipUpdateReply{}
-
-	err = uuc.locationRepo.UpdateLocationLastLevel(ctx, location.ID, req.SendBody.Vip)
+	err = uuc.uiRepo.UpdateUserRecommendLevel2(ctx, req.SendBody.UserId, uint64(req.SendBody.Vip))
 	if nil != err {
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	return nil, nil
 }
 
 func (uuc *UserUseCase) AdminBalanceUpdate(ctx context.Context, req *v1.AdminBalanceUpdateRequest) (*v1.AdminBalanceUpdateReply, error) {
