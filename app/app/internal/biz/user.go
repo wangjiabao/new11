@@ -38,6 +38,7 @@ type User struct {
 	RecommendLevel         int64
 	OutRate                int64
 	Lock                   int64
+	Vip                    int64
 	CreatedAt              time.Time
 }
 
@@ -773,6 +774,10 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			currentLevel = 7
 		} else if 10000000 <= tmpAreaMin {
 			currentLevel = 8
+		}
+
+		if 0 < vUsers.Vip {
+			currentLevel = uint64(vUsers.Vip)
 		}
 
 		res.Users = append(res.Users, &v1.AdminUserListReply_UserList{
@@ -4379,33 +4384,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
@@ -4626,33 +4662,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
@@ -4873,33 +4940,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
@@ -5120,33 +5218,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
@@ -5367,33 +5496,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
@@ -5614,33 +5774,64 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
-				currentLevel = 1
-				tmpLastLevelNum = vv1
-			} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
-				currentLevel = 2
-				tmpLastLevelNum = v2
-			} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
-				currentLevel = 3
-				tmpLastLevelNum = v3
-			} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
-				currentLevel = 4
-				tmpLastLevelNum = v4
-			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
-				currentLevel = 5
-				tmpLastLevelNum = v5
-			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
-				currentLevel = 6
-				tmpLastLevelNum = v6
-			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
-				currentLevel = 7
-				tmpLastLevelNum = v7
-			} else if 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = v8
+			if 0 < tmpRecommendUser.Vip {
+				if 1 == tmpRecommendUser.Vip {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 2 == tmpRecommendUser.Vip {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 3 == tmpRecommendUser.Vip {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 4 == tmpRecommendUser.Vip {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 5 == tmpRecommendUser.Vip {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 6 == tmpRecommendUser.Vip {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 7 == tmpRecommendUser.Vip {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 8 == tmpRecommendUser.Vip {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
+					currentLevel = 1
+					tmpLastLevelNum = vv1
+				} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
+					currentLevel = 2
+					tmpLastLevelNum = v2
+				} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
+					currentLevel = 3
+					tmpLastLevelNum = v3
+				} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = v4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = v5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = v6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = v7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = v8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过

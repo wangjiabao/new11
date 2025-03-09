@@ -29,6 +29,7 @@ type User struct {
 	PrivateKeyThree        string    `gorm:"type:varchar(400)"`
 	WordThree              string    `gorm:"type:varchar(200)"`
 	Undo                   int64     `gorm:"type:int;not null"`
+	Vip                    int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
@@ -569,6 +570,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			MyTotalAmount:          item.MyTotalAmount,
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
 			Last:                   item.Last,
+			Vip:                    item.Vip,
 		})
 	}
 	return res, nil
@@ -725,6 +727,7 @@ func (u *UserRepo) GetUsers(ctx context.Context, b *biz.Pagination, address stri
 			AmountUsdtOrigin: item.AmountUsdtOrigin,
 			AmountUsdtGet:    item.AmountUsdtGet,
 			MyTotalAmount:    item.MyTotalAmount,
+			Vip:              item.Vip,
 		})
 	}
 	return res, nil, count
