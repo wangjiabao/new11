@@ -40,6 +40,7 @@ type User struct {
 	Lock                   int64
 	Vip                    int64
 	CreatedAt              time.Time
+	UpdatedAt              time.Time
 }
 
 type Stake struct {
@@ -147,6 +148,7 @@ type UserBalance struct {
 	BalanceC               int64
 	AreaTotalFloat         float64
 	AreaTotalFloatTwo      float64
+	AreaTotalFloatThree    float64
 	RecommendTotalFloat    float64
 	RecommendLevelFloat    float64
 	RecommendTotalFloatTwo float64
@@ -210,6 +212,12 @@ type Reward struct {
 	CreatedAt        time.Time
 }
 
+type Total struct {
+	ID    int64
+	Two   float64
+	Three float64
+}
+
 type Pagination struct {
 	PageNum  int
 	PageSize int
@@ -265,7 +273,9 @@ type UserBalanceRepo interface {
 	SystemReward(ctx context.Context, amount int64, locationId int64) error
 	SystemDailyReward(ctx context.Context, amount int64, locationId int64) error
 	GetSystemYesterdayDailyReward(ctx context.Context, day int) (*Reward, error)
+	GetTotal(ctx context.Context) (*Total, error)
 	GetSystemYesterdayLocationReward(ctx context.Context, day int) ([]*UserBalanceRecord, error)
+	GetRewardYes(ctx context.Context) ([]*Reward, error)
 	SystemFee(ctx context.Context, amount int64, locationId int64) error
 	UserFee(ctx context.Context, userId int64, amount int64) (int64, error)
 	UserDailyFee(ctx context.Context, userId int64, amount int64, status string) (int64, error)
@@ -420,6 +430,7 @@ type UserRepo interface {
 	GetUsers(ctx context.Context, b *Pagination, address string, isLocation bool, vip int64) ([]*User, error, int64)
 	GetAllUsers(ctx context.Context) ([]*User, error)
 	GetAllUserInfos(ctx context.Context) ([]*UserInfo, error)
+	GetAllUserBalance(ctx context.Context) ([]*UserBalance, error)
 	GetUserCount(ctx context.Context) (int64, error)
 	GetUserCountToday(ctx context.Context) (int64, error)
 	CreateAdminAuth(ctx context.Context, adminId int64, authId int64) (bool, error)
@@ -796,6 +807,7 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			AmountUsdtCurrent: fmt.Sprintf("%.2f", vUsers.AmountUsdt),
 			BalanceKsdt:       fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceKsdtFloat),
 			RecommendLevel:    vUsers.RecommendLevel,
+			Lock:              vUsers.Lock,
 		})
 	}
 
@@ -2295,88 +2307,145 @@ func (uuc *UserUseCase) AdminFeeDaily(ctx context.Context, req *v1.AdminDailyFee
 }
 
 func (uuc *UserUseCase) AdminAll(ctx context.Context, req *v1.AdminAllRequest) (*v1.AdminAllReply, error) {
+	var (
+		totalDeposit int64
+	)
 
 	var (
-		userBalanceUsdtTotal             int64
-		userBalanceRecordUsdtTotal       int64
-		userBalanceRecordUsdtTotalTwo    int64
-		userBalanceRecordUsdtTotalThree  int64
-		userBalanceRecordUsdtTotalToday  int64
-		userWithdrawUsdtTotalToday       int64
-		userWithdrawUsdtTotal            int64
-		userBalanceDhbTotal              int64
-		userLocationCount                int64
-		userRewardLocationTotal          int64
-		userRewardAreaTotal              int64
-		userRewardRecommendTotal         int64
-		userRewardFourTotal              int64
-		userRewardRecommendLocationTotal int64
+		rewards []*Reward
+		err     error
+		total   *Total
 	)
-	//userCount, _ = uuc.repo.GetUserCount(ctx)
-	//userTodayCount, _ = uuc.repo.GetUserCountToday(ctx)
-	userBalanceUsdtTotal, _ = uuc.ubRepo.GetUserBalanceUsdtTotal(ctx)
-	userBalanceDhbTotal, _ = uuc.ubRepo.GetUserBalanceDHBTotal(ctx)
-	//userLocationNewCurrentMaxNew, _ = uuc.ubRepo.GetUserLocationNewCurrentMaxNew(ctx)
-	//userLocationNewCurrentMax, _ = uuc.ubRepo.GetUserLocationNewCurrentMax(ctx)
-	//userLocationNewCurrent, _ = uuc.ubRepo.GetUserLocationNewCurrent(ctx)
-	//tmpUserLocationNewCurrent = userLocationNewCurrentMaxNew/100000000 + userLocationNewCurrentMax/100000000 - userLocationNewCurrent/100000000
-	//userBalanceLockUsdtTotal, _ = uuc.ubRepo.GetUserBalanceLockUsdtTotal(ctx)
-	userBalanceRecordUsdtTotal, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotal(ctx)
-	userBalanceRecordUsdtTotalTwo, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotalTwo(ctx)
-	userBalanceRecordUsdtTotalThree, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotalThree(ctx)
-	//userBalanceRecordHbsTotal, _ = uuc.ubRepo.GetUserBalanceRecordHbsTotal(ctx)
-	//userBalanceRecordCsdTotal, _ = uuc.ubRepo.GetUserBalanceRecordCsdTotal(ctx)
-	userBalanceRecordUsdtTotalToday, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotalToday(ctx)
-	userWithdrawUsdtTotalToday, _ = uuc.ubRepo.GetUserWithdrawUsdtTotalToday(ctx)
-	//userWithdrawDhbTotalToday, _ = uuc.ubRepo.GetUserWithdrawDhbTotalToday(ctx)
-	userWithdrawUsdtTotal, _ = uuc.ubRepo.GetUserWithdrawUsdtTotal(ctx)
-	//userWithdrawDhbTotal, _ = uuc.ubRepo.GetUserWithdrawDhbTotal(ctx)
-	//systemRewardUsdtTotal, _ = uuc.ubRepo.GetSystemRewardUsdtTotal(ctx)
-	userLocationCount = uuc.locationRepo.GetLocationUserCount(ctx)
+	rewards, err = uuc.ubRepo.GetRewardYes(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	total, err = uuc.ubRepo.GetTotal(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	TodayRewardRsdt := float64(0)
+	TodayRewardRsdtOther := float64(0)
+	TodayExchange := float64(0)
+
+	// 社区奖励
+	var (
+		exchanges []*UserBalanceRecord
+	)
+	exchanges, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx, 0)
+	if nil != err {
+		return nil, nil
+	}
+
+	for _, v := range exchanges {
+		TodayExchange += v.AmountNewTwo
+	}
+
+	for _, v := range rewards {
+		if "location" == v.Reason {
+			TodayRewardRsdt += v.AmountNew
+		}
+
+		if "recommend" == v.Reason || "area" == v.Reason || "area_two" == v.Reason || "area_three" == v.Reason {
+			TodayRewardRsdtOther += v.AmountNew
+		}
+	}
+
+	totalDeposit, _ = uuc.ubRepo.GetUserBalanceRecordUsdtTotalThree(ctx)
+	var (
+		users        []*User
+		userBalances []*UserBalance
+	)
+	users, err = uuc.repo.GetAllUsers(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	now := time.Now().UTC()
+	var startDate time.Time
+	if 16 <= now.Hour() {
+		startDate = now
+	} else {
+		startDate = now.AddDate(0, 0, -1)
+	}
+
+	todayStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 16, 0, 0, 0, time.UTC)
+
+	totalUser := int64(0)
+	todayUser := int64(0)
+	totalAmountUsdt := float64(0)
+	for _, v := range users {
+		if 0 < v.AmountUsdt {
+			totalUser++
+			totalAmountUsdt += v.AmountUsdt
+			if v.UpdatedAt.After(todayStart) {
+				todayUser++
+			}
+		} else {
+			if 0 < v.OutRate {
+				totalUser++
+				if v.UpdatedAt.After(todayStart) {
+					todayUser++
+				}
+			}
+		}
+	}
+
+	TotalReward := float64(0)
+	totalRsdt := float64(0)
+	totalRwb := float64(0)
+	totalKsdt := float64(0)
+	userBalances, err = uuc.repo.GetAllUserBalance(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	for _, v := range userBalances {
+		tmp := float64(0)
+
+		tmp += v.LocationTotalFloat
+
+		tmp += v.RecommendTotalFloat
+		tmp += v.AreaTotalFloat
+		tmp += v.AreaTotalFloatTwo
+		tmp += v.AreaTotalFloatThree
+
+		TotalReward += tmp
+
+		totalRsdt += v.BalanceUsdtFloat
+		totalKsdt += v.BalanceKsdtFloat
+		totalRwb += v.BalanceRawFloat
+	}
 
 	var (
-		err error
+		stakes []*Stake
 	)
-	userRewardLocationTotal, err = uuc.ubRepo.GetUserRewardLocationTotalToday(ctx, "location")
+	stakes, err = uuc.ubRepo.GetStake(ctx)
 	if nil != err {
-
+		return nil, err
 	}
-	userRewardRecommendTotal, err = uuc.ubRepo.GetUserRewardLocationTotalToday(ctx, "recommend")
-	if nil != err {
-
+	totalStake := float64(0)
+	for _, v := range stakes {
+		totalStake += v.Amount
 	}
-	userRewardAreaTotal, err = uuc.ubRepo.GetUserRewardLocationTotalToday(ctx, "area")
-	if nil != err {
-
-	}
-	userRewardFourTotal, err = uuc.ubRepo.GetUserRewardLocationTotalToday(ctx, "four")
-	if nil != err {
-
-	}
-	userRewardRecommendLocationTotal, err = uuc.ubRepo.GetUserRewardLocationTotalToday(ctx, "recommend_location")
-	if nil != err {
-
-	}
-	//balanceRewardRewarded, _ = uuc.ubRepo.GetUserRewardBalanceRewardTotal(ctx)
-	//balanceReward, _ = uuc.ubRepo.GetBalanceRewardTotal(ctx)
-	//amountCsd, _ = uuc.ubRepo.GetTradeOkkCsd(ctx)
-	//amountHbs, _ = uuc.ubRepo.GetTradeOkkHbs(ctx)
 
 	return &v1.AdminAllReply{
-		TotalUser:                    userLocationCount,
-		TodayLocation:                fmt.Sprintf("%.2f", float64(userBalanceRecordUsdtTotalToday)/float64(100000)),
-		AllLocation:                  fmt.Sprintf("%.2f", float64(userBalanceRecordUsdtTotal)/float64(100000)),
-		AllLocationTwo:               fmt.Sprintf("%.2f", float64(userBalanceRecordUsdtTotalTwo)),
-		AllLocationThree:             fmt.Sprintf("%.2f", float64(userBalanceRecordUsdtTotalThree)),
-		TodayLocationReward:          fmt.Sprintf("%.2f", float64(userRewardLocationTotal)/float64(100000)),
-		TodayRecommendReward:         fmt.Sprintf("%.2f", float64(userRewardRecommendTotal)/float64(100000)),
-		TodayRecommendLocationReward: fmt.Sprintf("%.2f", float64(userRewardRecommendLocationTotal)/float64(100000)),
-		TodayAreaReward:              fmt.Sprintf("%.2f", float64(userRewardAreaTotal)/float64(100000)),
-		TodayFourReward:              fmt.Sprintf("%.2f", float64(userRewardFourTotal)/float64(100000)),
-		TotalIsps:                    fmt.Sprintf("%.2f", float64(userBalanceDhbTotal)/float64(100000)),
-		TotalUsdt:                    fmt.Sprintf("%.2f", float64(userBalanceUsdtTotal)/float64(100000)),
-		TodayWithdrawUsdt:            fmt.Sprintf("%.2f", float64(userWithdrawUsdtTotalToday)/float64(100000)),
-		TotalWithdrawUsdt:            fmt.Sprintf("%.2f", float64(userWithdrawUsdtTotal)/float64(100000)),
+		TotalUser:            totalUser,
+		TodayTotalUser:       todayUser,
+		TotalDepositRwb:      strconv.FormatInt(totalDeposit, 10),
+		TotalDestroyRwb:      strconv.FormatInt(totalDeposit, 10),
+		AllLocation:          fmt.Sprintf("%.2f", totalAmountUsdt),
+		TodayRewardRsdt:      fmt.Sprintf("%.2f", TodayRewardRsdt),
+		TodayRewardRsdtOther: fmt.Sprintf("%.2f", TodayRewardRsdtOther),
+		TotalReward:          fmt.Sprintf("%.2f", TotalReward),
+		TotalStake:           fmt.Sprintf("%.2f", totalStake),
+		TodayExchange:        fmt.Sprintf("%.2f", TodayExchange),
+		TotalExchangeRwb:     fmt.Sprintf("%.2f", total.Three),
+		TotalBalanceRsdt:     fmt.Sprintf("%.2f", totalRsdt),
+		TotalBalanceRwb:      fmt.Sprintf("%.2f", totalRwb),
+		TotalBalanceKsdt:     fmt.Sprintf("%.2f", totalKsdt),
 	}, nil
 }
 

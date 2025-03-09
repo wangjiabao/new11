@@ -1508,31 +1508,31 @@ components:
             properties:
                 totalUser:
                     type: string
-                todayLocation:
+                todayTotalUser:
+                    type: string
+                totalDepositRwb:
+                    type: string
+                totalDestroyRwb:
                     type: string
                 allLocation:
                     type: string
-                allLocationTwo:
+                todayRewardRsdt:
                     type: string
-                allLocationThree:
+                todayRewardRsdtOther:
                     type: string
-                todayLocationReward:
+                totalReward:
                     type: string
-                todayRecommendReward:
+                totalStake:
                     type: string
-                todayRecommendLocationReward:
+                todayExchange:
                     type: string
-                todayAreaReward:
+                totalExchangeRwb:
                     type: string
-                todayFourReward:
+                totalBalanceRsdt:
                     type: string
-                totalIsps:
+                totalBalanceRwb:
                     type: string
-                totalUsdt:
-                    type: string
-                todayWithdrawUsdt:
-                    type: string
-                totalWithdrawUsdt:
+                totalBalanceKsdt:
                     type: string
         AdminAreaLevelUpdateReply:
             type: object
@@ -1891,6 +1891,8 @@ components:
                 vip:
                     type: string
                 historyRecommend:
+                    type: string
+                lock:
                     type: string
         AdminUserRecommendReply:
             type: object
