@@ -557,7 +557,7 @@ func (u *UserRepo) GetUserByUserIds(ctx context.Context, userIds ...int64) (map[
 // GetAllUserBalance .
 func (u *UserRepo) GetAllUserBalance(ctx context.Context) ([]*biz.UserBalance, error) {
 	var userBalances []*UserBalance
-	if err := u.data.db.Table("user").Order("id asc").Find(&userBalances).Error; err != nil {
+	if err := u.data.db.Table("user_balance").Order("id asc").Find(&userBalances).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -3448,7 +3448,7 @@ func (ub *UserBalanceRepo) GetRewardYes(ctx context.Context) ([]*biz.Reward, err
 	if err := ub.data.db.
 		Where("created_at>=?", todayStart).
 		Where("created_at<?", todayEnd).
-		Table("reward").First(&rewards).Error; err != nil {
+		Table("reward").Find(&rewards).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return res, nil
 		}
