@@ -430,6 +430,12 @@ service App {
 			body: "send_body"
 		};
 	};
+
+	rpc AdminBuyList (AdminBuyListRequest) returns (AdminBuyListReply) {
+		option (google.api.http) = {
+			get: "/api/admin_dhb/buy_list"
+		};
+	};
 }
 
 message EthAuthorizeRequest {
@@ -656,6 +662,7 @@ message AdminUserListReply { // 用户信息
 		double areaMax = 11; // 大区
 		int64 vip = 5; // 会员等级
 		int64 historyRecommend = 6; // 历史推荐人数
+		int64 lock = 12; // 锁定状态
 	}
 
 	int64 count = 2;
@@ -801,19 +808,24 @@ message AdminAllRequest {
 
 message AdminAllReply {
 	int64 totalUser = 2; // 激活人数
-	string todayLocation = 4; // 今日入金u数量
-	string allLocation = 5; // 总入金u数量
-	string allLocationTwo = 20; // 总入金u数量
-	string allLocationThree = 21; // 总入金u数量
-	string todayLocationReward = 1; // 今日静态释放
-	string todayRecommendReward = 3; // 今日动态释放
-	string todayRecommendLocationReward = 8; // 今日直推秒结释放
-	string todayAreaReward = 16; // 今日矩阵释放
-	string todayFourReward = 15; // 今日前四名分红u数量
-	string totalIsps= 6; // 全网ISPS数量
-	string totalUsdt = 7; // 全网可提U数量
-	string todayWithdrawUsdt = 18; // 今日提U数量
-	string totalWithdrawUsdt = 19; // 总提U数量
+	int64 todayTotalUser = 1; // 今日激活人数
+
+	string totalDepositRwb = 4; // 充值rwb数量。
+	string totalDestroyRwb = 6; // 销毁rwb数量。
+
+	string allLocation = 5; // 购买矿机总数
+	string todayRewardRsdt = 11; // 今日静态释放rsdt总数
+	string todayRewardRsdtOther = 12; // 今日动态直推团队平级新增rsdt
+
+	string totalReward = 13; // 全网动静态释放
+
+	string totalStake = 7; // 全网质押总量
+	string todayExchange = 9; // 今日兑换rwb手续费
+	string totalExchangeRwb = 14; // 总兑换rwb
+
+	string totalBalanceRsdt = 18; // 全网rsdt余额
+	string totalBalanceRwb = 19; // 全网rwb余额
+	string totalBalanceKsdt = 20; // 全网ksdt余额
 }
 
 message AdminUserRecommendRequest {

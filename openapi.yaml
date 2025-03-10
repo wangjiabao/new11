@@ -211,6 +211,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/admin_dhb/buy_list:
+        get:
+            tags:
+                - App
+            operationId: App_AdminBuyList
+            parameters:
+                - name: page
+                  in: query
+                  schema:
+                    type: string
+                - name: address
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AdminBuyListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/admin_dhb/change_password:
         post:
             tags:
@@ -1481,31 +1508,31 @@ components:
             properties:
                 totalUser:
                     type: string
-                todayLocation:
+                todayTotalUser:
+                    type: string
+                totalDepositRwb:
+                    type: string
+                totalDestroyRwb:
                     type: string
                 allLocation:
                     type: string
-                allLocationTwo:
+                todayRewardRsdt:
                     type: string
-                allLocationThree:
+                todayRewardRsdtOther:
                     type: string
-                todayLocationReward:
+                totalReward:
                     type: string
-                todayRecommendReward:
+                totalStake:
                     type: string
-                todayRecommendLocationReward:
+                todayExchange:
                     type: string
-                todayAreaReward:
+                totalExchangeRwb:
                     type: string
-                todayFourReward:
+                totalBalanceRsdt:
                     type: string
-                totalIsps:
+                totalBalanceRwb:
                     type: string
-                totalUsdt:
-                    type: string
-                todayWithdrawUsdt:
-                    type: string
-                totalWithdrawUsdt:
+                totalBalanceKsdt:
                     type: string
         AdminAreaLevelUpdateReply:
             type: object
@@ -1526,6 +1553,26 @@ components:
                 userId:
                     type: string
                 amount:
+                    type: string
+        AdminBuyListReply:
+            type: object
+            properties:
+                rewards:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AdminBuyListReply_List'
+                count:
+                    type: string
+        AdminBuyListReply_List:
+            type: object
+            properties:
+                id:
+                    type: string
+                createdAt:
+                    type: string
+                amount:
+                    type: string
+                address:
                     type: string
         AdminChangePasswordReply:
             type: object
@@ -1844,6 +1891,8 @@ components:
                 vip:
                     type: string
                 historyRecommend:
+                    type: string
+                lock:
                     type: string
         AdminUserRecommendReply:
             type: object

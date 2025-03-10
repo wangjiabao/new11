@@ -29,6 +29,7 @@ type User struct {
 	PrivateKeyThree        string    `gorm:"type:varchar(400)"`
 	WordThree              string    `gorm:"type:varchar(200)"`
 	Undo                   int64     `gorm:"type:int;not null"`
+	Vip                    int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
@@ -118,6 +119,7 @@ type UserBalance struct {
 	UpdatedAt              time.Time `gorm:"type:datetime;not null"`
 	AreaTotalFloat         float64   `gorm:"type:decimal(65,20);not null"`
 	AreaTotalFloatTwo      float64   `gorm:"type:decimal(65,20);not null"`
+	AreaTotalFloatThree    float64   `gorm:"type:decimal(65,20);not null"`
 	RecommendTotalFloat    float64   `gorm:"type:decimal(65,20);not null"`
 	RecommendLevelFloat    float64   `gorm:"type:decimal(65,20);not null"`
 	RecommendTotalFloatTwo float64   `gorm:"type:decimal(65,20);not null"`
@@ -193,6 +195,14 @@ type Reward struct {
 	LocationType     string    `gorm:"type:varchar(45);not null"`
 	CreatedAt        time.Time `gorm:"type:datetime;not null"`
 	UpdatedAt        time.Time `gorm:"type:datetime;not null"`
+}
+
+type Total struct {
+	ID        int64     `gorm:"primarykey;type:int"`
+	Two       float64   `gorm:"type:decimal(65,20);not null"`
+	Three     float64   `gorm:"type:decimal(65,20);not null"`
+	CreatedAt time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt time.Time `gorm:"type:datetime;not null"`
 }
 
 type Admin struct {
@@ -544,6 +554,37 @@ func (u *UserRepo) GetUserByUserIds(ctx context.Context, userIds ...int64) (map[
 	return res, nil
 }
 
+// GetAllUserBalance .
+func (u *UserRepo) GetAllUserBalance(ctx context.Context) ([]*biz.UserBalance, error) {
+	var userBalances []*UserBalance
+	if err := u.data.db.Table("user_balance").Order("id asc").Find(&userBalances).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "USER ERROR", err.Error())
+	}
+
+	res := make([]*biz.UserBalance, 0)
+	for _, userBalance := range userBalances {
+		res = append(res, &biz.UserBalance{
+			ID:                  userBalance.ID,
+			UserId:              userBalance.UserId,
+			BalanceRawFloat:     userBalance.BalanceRawFloat,
+			BalanceUsdtFloat:    userBalance.BalanceUsdtFloat,
+			BalanceKsdtFloat:    userBalance.BalanceKsdtFloat,
+			AreaTotalFloat:      userBalance.AreaTotalFloat,
+			AreaTotalFloatTwo:   userBalance.AreaTotalFloatTwo,
+			AreaTotalFloatThree: userBalance.AreaTotalFloatThree,
+			RecommendTotalFloat: userBalance.RecommendTotalFloat,
+			LocationTotalFloat:  userBalance.LocationTotalFloat,
+			RecommendLevelFloat: userBalance.RecommendLevelFloat,
+		})
+	}
+
+	return res, nil
+}
+
 // GetAllUsers .
 func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 	var users []*User
@@ -569,6 +610,9 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			MyTotalAmount:          item.MyTotalAmount,
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
 			Last:                   item.Last,
+			Vip:                    item.Vip,
+			OutRate:                item.OutRate,
+			UpdatedAt:              item.UpdatedAt,
 		})
 	}
 	return res, nil
@@ -725,6 +769,7 @@ func (u *UserRepo) GetUsers(ctx context.Context, b *biz.Pagination, address stri
 			AmountUsdtOrigin: item.AmountUsdtOrigin,
 			AmountUsdtGet:    item.AmountUsdtGet,
 			MyTotalAmount:    item.MyTotalAmount,
+			Vip:              item.Vip,
 		})
 	}
 	return res, nil, count
@@ -2920,6 +2965,17 @@ func (ui *UserInfoRepo) UpdateUserRecommendLevel(ctx context.Context, userId int
 	return nil
 }
 
+// UpdateUserRecommendLevel2 .
+func (ui *UserInfoRepo) UpdateUserRecommendLevel2(ctx context.Context, userId int64, level uint64) error {
+	res := ui.data.DB(ctx).Table("user").Where("id=?", userId).
+		Updates(map[string]interface{}{"vip": level})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
+	}
+
+	return nil
+}
+
 // UpdateUserLast .
 func (ui *UserInfoRepo) UpdateUserLast(ctx context.Context, userId int64, coinType string) error {
 	if "USDT" == coinType {
@@ -3369,6 +3425,70 @@ func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context,
 	}
 
 	return res, nil
+}
+
+// GetRewardYes .
+func (ub *UserBalanceRepo) GetRewardYes(ctx context.Context) ([]*biz.Reward, error) {
+	var rewards []*Reward
+
+	now := time.Now().UTC()
+	var startDate time.Time
+	var endDate time.Time
+	if 16 <= now.Hour() {
+		startDate = now
+		endDate = now.AddDate(0, 0, 1)
+	} else {
+		startDate = now.AddDate(0, 0, -1)
+		endDate = now
+	}
+	todayStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 16, 0, 0, 0, time.UTC)
+	todayEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 16, 0, 0, 0, time.UTC)
+
+	res := make([]*biz.Reward, 0)
+	if err := ub.data.db.
+		Where("created_at>=?", todayStart).
+		Where("created_at<?", todayEnd).
+		Table("reward").Find(&rewards).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+
+		return nil, errors.New(500, "REWARD ERROR", err.Error())
+	}
+
+	for _, reward := range rewards {
+		res = append(res, &biz.Reward{
+			ID:               reward.ID,
+			UserId:           reward.UserId,
+			Amount:           reward.Amount,
+			BalanceRecordId:  reward.BalanceRecordId,
+			Type:             reward.Type,
+			TypeRecordId:     reward.TypeRecordId,
+			Reason:           reward.Reason,
+			ReasonLocationId: reward.ReasonLocationId,
+			LocationType:     reward.LocationType,
+			AmountNew:        reward.AmountNew,
+		})
+	}
+
+	return res, nil
+}
+
+// GetTotal .
+func (ub *UserBalanceRepo) GetTotal(ctx context.Context) (*biz.Total, error) {
+	var total Total
+	if err := ub.data.db.Table("total").First(&total).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.NotFound("REWARD_NOT_FOUND", "total not found")
+		}
+
+		return nil, errors.New(500, "REWARD ERROR", err.Error())
+	}
+	return &biz.Total{
+		ID:    total.ID,
+		Two:   total.Two,
+		Three: total.Three,
+	}, nil
 }
 
 // GetSystemYesterdayDailyReward .
@@ -4888,11 +5008,14 @@ func (ub UserBalanceRepo) GetUserBalanceRecordUsdtTotalTwo(ctx context.Context) 
 	return total.Total, nil
 }
 
+type UserBalanceTotalFloat struct {
+	Total float64
+}
+
 // GetUserBalanceRecordUsdtTotalThree .
 func (ub UserBalanceRepo) GetUserBalanceRecordUsdtTotalThree(ctx context.Context) (int64, error) {
 	var total UserBalanceTotal
 	if err := ub.data.db.Table("eth_user_record").
-		Where("coin_type=?", "DHB").
 		Select("sum(amount_two) as total").Take(&total).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return total.Total, errors.NotFound("USER_BALANCE_RECORD_NOT_FOUND", "user balance not found")
