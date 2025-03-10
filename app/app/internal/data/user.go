@@ -325,6 +325,23 @@ func (u *UserRepo) GetUserByAddress(ctx context.Context, address string) (*biz.U
 	}, nil
 }
 
+// GetUserByAddressTwo .
+func (u *UserRepo) GetUserByAddressTwo(ctx context.Context, address string) (*biz.User, error) {
+	var user User
+	if err := u.data.db.Where("address=?", address).Table("user").First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, errors.New(500, "USER ERROR", err.Error())
+	}
+
+	return &biz.User{
+		ID:      user.ID,
+		Address: user.Address,
+	}, nil
+}
+
 // GetConfigByKeys .
 func (c *ConfigRepo) GetConfigByKeys(ctx context.Context, keys ...string) ([]*biz.Config, error) {
 	var configs []*Config

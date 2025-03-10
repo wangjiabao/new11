@@ -423,6 +423,7 @@ type UserRepo interface {
 	GetAdminById(ctx context.Context, id int64) (*Admin, error)
 	GetUserByAddresses(ctx context.Context, Addresses ...string) (map[string]*User, error)
 	GetUserByAddress(ctx context.Context, address string) (*User, error)
+	GetUserByAddressTwo(ctx context.Context, address string) (*User, error)
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	CreateAdmin(ctx context.Context, a *Admin) (*Admin, error)
 	GetUserByUserIds(ctx context.Context, userIds ...int64) (map[int64]*User, error)
@@ -6379,7 +6380,7 @@ func (uuc *UserUseCase) AdminAddMoney(ctx context.Context, req *v1.AdminDailyAdd
 		user *User
 		err  error
 	)
-	user, err = uuc.repo.GetUserByAddress(ctx, req.Address)
+	user, err = uuc.repo.GetUserByAddressTwo(ctx, req.Address)
 	if nil != err {
 		return nil, nil
 	}
