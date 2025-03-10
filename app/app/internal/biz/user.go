@@ -6184,15 +6184,17 @@ func (uuc *UserUseCase) AdminAddMoney(ctx context.Context, req *v1.AdminDailyAdd
 		return nil, nil
 	}
 
-	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { //
-		err = uuc.uiRepo.UpdateUserNewTwoNewThree(ctx, user.ID, uint64(req.Usdt), 0, "RAW")
-		if nil != err {
-			return err
-		}
+	if nil != user {
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { //
+			err = uuc.uiRepo.UpdateUserNewTwoNewThree(ctx, user.ID, uint64(req.Usdt), 0, "RAW")
+			if nil != err {
+				return err
+			}
 
-		return nil
-	}); nil != err {
-		return nil, err
+			return nil
+		}); nil != err {
+			return nil, err
+		}
 	}
 
 	return nil, nil
