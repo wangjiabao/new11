@@ -424,6 +424,13 @@ service App {
 		};
 	};
 
+	rpc LockUserReward(LockUserRewardRequest) returns (LockUserRewardReply) {
+		option (google.api.http) = {
+			post: "/api/admin_dhb/lock_user_reward"
+			body: "send_body"
+		};
+	};
+
 	rpc AdminRecommendLevelUpdate (AdminRecommendLevelRequest) returns (AdminRecommendLevelReply) {
 		option (google.api.http) = {
 			post: "/api/admin_dhb/admin_recommend_level"
@@ -663,6 +670,7 @@ message AdminUserListReply { // 用户信息
 		int64 vip = 5; // 会员等级
 		int64 historyRecommend = 6; // 历史推荐人数
 		int64 lock = 12; // 锁定状态
+		int64 lockReward = 13; // 开启禁止上级分红 1表示开启，0表示关闭
 	}
 
 	int64 count = 2;
@@ -1179,4 +1187,16 @@ message LockUserRequest {
 }
 
 message LockUserReply {
+}
+
+message LockUserRewardRequest {
+	message SendBody{
+		int64 userId = 1;
+		int64 lockReward = 2;
+	}
+
+	SendBody send_body = 1;
+}
+
+message LockUserRewardReply {
 }

@@ -1879,6 +1879,10 @@ func (a *AppService) LockUser(ctx context.Context, req *v1.LockUserRequest) (*v1
 	return a.uuc.LockUser(ctx, req)
 }
 
+func (a *AppService) LockUserReward(ctx context.Context, req *v1.LockUserRewardRequest) (*v1.LockUserRewardReply, error) {
+	return a.uuc.LockUserReward(ctx, req)
+}
+
 func (a *AppService) TestMoney(ctx context.Context, req *v1.TestMoneyRequest) (*v1.TestMoneyReply, error) {
 	var (
 		users []*biz.User

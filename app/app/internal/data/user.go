@@ -30,6 +30,7 @@ type User struct {
 	WordThree              string    `gorm:"type:varchar(200)"`
 	Undo                   int64     `gorm:"type:int;not null"`
 	Vip                    int64     `gorm:"type:int;not null"`
+	LockReward             int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
@@ -630,6 +631,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			Vip:                    item.Vip,
 			OutRate:                item.OutRate,
 			UpdatedAt:              item.UpdatedAt,
+			LockReward:             item.LockReward,
 		})
 	}
 	return res, nil
@@ -787,6 +789,7 @@ func (u *UserRepo) GetUsers(ctx context.Context, b *biz.Pagination, address stri
 			AmountUsdtGet:    item.AmountUsdtGet,
 			MyTotalAmount:    item.MyTotalAmount,
 			Vip:              item.Vip,
+			LockReward:       item.LockReward,
 		})
 	}
 	return res, nil, count
@@ -1258,6 +1261,15 @@ func (u *UserRepo) UndoUser(ctx context.Context, userId int64, undo int64) (bool
 // LockUser .
 func (u *UserRepo) LockUser(ctx context.Context, userId int64, lock int64) (bool, error) {
 	res := u.data.DB(ctx).Table("user").Where("id=?", userId).Updates(map[string]interface{}{"lock": lock})
+	if res.Error != nil {
+		return false, errors.New(500, "CREATE_USER_ERROR", "用户修改失败")
+	}
+
+	return true, nil
+}
+
+func (u *UserRepo) LockUserReward(ctx context.Context, userId int64, lock int64) (bool, error) {
+	res := u.data.DB(ctx).Table("user").Where("id=?", userId).Updates(map[string]interface{}{"lock_reward": lock})
 	if res.Error != nil {
 		return false, errors.New(500, "CREATE_USER_ERROR", "用户修改失败")
 	}

@@ -39,6 +39,7 @@ type User struct {
 	OutRate                int64
 	Lock                   int64
 	Vip                    int64
+	LockReward             int64
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
 }
@@ -419,6 +420,7 @@ type UserRepo interface {
 	GetUserById(ctx context.Context, Id int64) (*User, error)
 	UndoUser(ctx context.Context, userId int64, undo int64) (bool, error)
 	LockUser(ctx context.Context, userId int64, lock int64) (bool, error)
+	LockUserReward(ctx context.Context, userId int64, lock int64) (bool, error)
 	GetAdminByAccount(ctx context.Context, account string, password string) (*Admin, error)
 	GetAdminById(ctx context.Context, id int64) (*Admin, error)
 	GetUserByAddresses(ctx context.Context, Addresses ...string) (map[string]*User, error)
@@ -809,6 +811,7 @@ func (uuc *UserUseCase) AdminUserList(ctx context.Context, req *v1.AdminUserList
 			BalanceKsdt:       fmt.Sprintf("%.2f", userBalances[vUsers.ID].BalanceKsdtFloat),
 			RecommendLevel:    vUsers.RecommendLevel,
 			Lock:              vUsers.Lock,
+			LockReward:        vUsers.LockReward,
 		})
 	}
 
@@ -922,6 +925,28 @@ func (uuc *UserUseCase) LockUser(ctx context.Context, req *v1.LockUserRequest) (
 	}
 
 	_, err = uuc.repo.LockUser(ctx, req.SendBody.UserId, lock)
+	if nil != err {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (uuc *UserUseCase) LockUserReward(ctx context.Context, req *v1.LockUserRewardRequest) (*v1.LockUserRewardReply, error) {
+	var (
+		err  error
+		lock int64
+	)
+
+	res := &v1.LockUserRewardReply{}
+
+	if 1 == req.SendBody.LockReward {
+		lock = 1
+	} else {
+		lock = 0
+	}
+
+	_, err = uuc.repo.LockUserReward(ctx, req.SendBody.UserId, lock)
 	if nil != err {
 		return res, err
 	}
@@ -3404,6 +3429,9 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	// 直推
 	for _, v := range userReward1 {
+		if 1 == v.LockReward {
+			continue
+		}
 		tmp := v.AmountUsdt * level1
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.5 {
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
@@ -3562,6 +3590,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward2 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level2
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.8 {
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
@@ -3721,6 +3753,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward3 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level3
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2 {
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
@@ -3879,6 +3915,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward4 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level4
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.3 {
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
@@ -4037,6 +4077,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward5 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level5
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.6 {
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
@@ -4195,6 +4239,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward6 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level6
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*3 {
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)
@@ -4355,6 +4403,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 
 	// 大小区
 	for _, v := range userReward1 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level1
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.5 {
 			tmp = math.Abs(v.AmountUsdt*1.5 - v.AmountUsdtGet)
@@ -4633,6 +4685,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward2 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level2
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*1.8 {
 			tmp = math.Abs(v.AmountUsdt*1.8 - v.AmountUsdtGet)
@@ -4911,6 +4967,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward3 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level3
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2 {
 			tmp = math.Abs(v.AmountUsdt*2 - v.AmountUsdtGet)
@@ -5189,6 +5249,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward4 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level4
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.3 {
 			tmp = math.Abs(v.AmountUsdt*2.3 - v.AmountUsdtGet)
@@ -5467,6 +5531,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward5 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level5
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*2.6 {
 			tmp = math.Abs(v.AmountUsdt*2.6 - v.AmountUsdtGet)
@@ -5745,6 +5813,10 @@ func (uuc *UserUseCase) AdminDailyLocationReward(ctx context.Context, req *v1.Ad
 	}
 
 	for _, v := range userReward6 {
+		if 1 == v.LockReward {
+			continue
+		}
+
 		tmp := v.AmountUsdt * level6
 		if tmp+v.AmountUsdtGet >= v.AmountUsdt*3 {
 			tmp = math.Abs(v.AmountUsdt*3 - v.AmountUsdtGet)

@@ -84,7 +84,9 @@ const (
 	App_AdminAddMoney_FullMethodName                        = "/api.App/AdminAddMoney"
 	App_TestMoney_FullMethodName                            = "/api.App/TestMoney"
 	App_LockUser_FullMethodName                             = "/api.App/LockUser"
+	App_LockUserReward_FullMethodName                       = "/api.App/LockUserReward"
 	App_AdminRecommendLevelUpdate_FullMethodName            = "/api.App/AdminRecommendLevelUpdate"
+	App_AdminBuyList_FullMethodName                         = "/api.App/AdminBuyList"
 )
 
 // AppClient is the client API for App service.
@@ -156,7 +158,9 @@ type AppClient interface {
 	AdminAddMoney(ctx context.Context, in *AdminDailyAddMoneyRequest, opts ...grpc.CallOption) (*AdminDailyAddMoneyReply, error)
 	TestMoney(ctx context.Context, in *TestMoneyRequest, opts ...grpc.CallOption) (*TestMoneyReply, error)
 	LockUser(ctx context.Context, in *LockUserRequest, opts ...grpc.CallOption) (*LockUserReply, error)
+	LockUserReward(ctx context.Context, in *LockUserRewardRequest, opts ...grpc.CallOption) (*LockUserRewardReply, error)
 	AdminRecommendLevelUpdate(ctx context.Context, in *AdminRecommendLevelRequest, opts ...grpc.CallOption) (*AdminRecommendLevelReply, error)
+	AdminBuyList(ctx context.Context, in *AdminBuyListRequest, opts ...grpc.CallOption) (*AdminBuyListReply, error)
 }
 
 type appClient struct {
@@ -752,9 +756,27 @@ func (c *appClient) LockUser(ctx context.Context, in *LockUserRequest, opts ...g
 	return out, nil
 }
 
+func (c *appClient) LockUserReward(ctx context.Context, in *LockUserRewardRequest, opts ...grpc.CallOption) (*LockUserRewardReply, error) {
+	out := new(LockUserRewardReply)
+	err := c.cc.Invoke(ctx, App_LockUserReward_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *appClient) AdminRecommendLevelUpdate(ctx context.Context, in *AdminRecommendLevelRequest, opts ...grpc.CallOption) (*AdminRecommendLevelReply, error) {
 	out := new(AdminRecommendLevelReply)
 	err := c.cc.Invoke(ctx, App_AdminRecommendLevelUpdate_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appClient) AdminBuyList(ctx context.Context, in *AdminBuyListRequest, opts ...grpc.CallOption) (*AdminBuyListReply, error) {
+	out := new(AdminBuyListReply)
+	err := c.cc.Invoke(ctx, App_AdminBuyList_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -830,7 +852,9 @@ type AppServer interface {
 	AdminAddMoney(context.Context, *AdminDailyAddMoneyRequest) (*AdminDailyAddMoneyReply, error)
 	TestMoney(context.Context, *TestMoneyRequest) (*TestMoneyReply, error)
 	LockUser(context.Context, *LockUserRequest) (*LockUserReply, error)
+	LockUserReward(context.Context, *LockUserRewardRequest) (*LockUserRewardReply, error)
 	AdminRecommendLevelUpdate(context.Context, *AdminRecommendLevelRequest) (*AdminRecommendLevelReply, error)
+	AdminBuyList(context.Context, *AdminBuyListRequest) (*AdminBuyListReply, error)
 	mustEmbedUnimplementedAppServer()
 }
 
@@ -1033,8 +1057,14 @@ func (UnimplementedAppServer) TestMoney(context.Context, *TestMoneyRequest) (*Te
 func (UnimplementedAppServer) LockUser(context.Context, *LockUserRequest) (*LockUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LockUser not implemented")
 }
+func (UnimplementedAppServer) LockUserReward(context.Context, *LockUserRewardRequest) (*LockUserRewardReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LockUserReward not implemented")
+}
 func (UnimplementedAppServer) AdminRecommendLevelUpdate(context.Context, *AdminRecommendLevelRequest) (*AdminRecommendLevelReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AdminRecommendLevelUpdate not implemented")
+}
+func (UnimplementedAppServer) AdminBuyList(context.Context, *AdminBuyListRequest) (*AdminBuyListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminBuyList not implemented")
 }
 func (UnimplementedAppServer) mustEmbedUnimplementedAppServer() {}
 
@@ -2219,6 +2249,24 @@ func _App_LockUser_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _App_LockUserReward_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LockUserRewardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServer).LockUserReward(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: App_LockUserReward_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServer).LockUserReward(ctx, req.(*LockUserRewardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _App_AdminRecommendLevelUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AdminRecommendLevelRequest)
 	if err := dec(in); err != nil {
@@ -2233,6 +2281,24 @@ func _App_AdminRecommendLevelUpdate_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AppServer).AdminRecommendLevelUpdate(ctx, req.(*AdminRecommendLevelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _App_AdminBuyList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminBuyListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServer).AdminBuyList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: App_AdminBuyList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServer).AdminBuyList(ctx, req.(*AdminBuyListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2505,8 +2571,16 @@ var App_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _App_LockUser_Handler,
 		},
 		{
+			MethodName: "LockUserReward",
+			Handler:    _App_LockUserReward_Handler,
+		},
+		{
 			MethodName: "AdminRecommendLevelUpdate",
 			Handler:    _App_AdminRecommendLevelUpdate_Handler,
+		},
+		{
+			MethodName: "AdminBuyList",
+			Handler:    _App_AdminBuyList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

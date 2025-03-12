@@ -884,6 +884,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/admin_dhb/lock_user_reward:
+        post:
+            tags:
+                - App
+            operationId: App_LockUserReward
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LockUserRewardRequest_SendBody'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LockUserRewardReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/admin_dhb/login:
         post:
             tags:
@@ -1894,6 +1918,8 @@ components:
                     type: string
                 lock:
                     type: string
+                lockReward:
+                    type: string
         AdminUserRecommendReply:
             type: object
             properties:
@@ -2050,6 +2076,16 @@ components:
                 userId:
                     type: string
                 lock:
+                    type: string
+        LockUserRewardReply:
+            type: object
+            properties: {}
+        LockUserRewardRequest_SendBody:
+            type: object
+            properties:
+                userId:
+                    type: string
+                lockReward:
                     type: string
         MyAuthListReply:
             type: object
